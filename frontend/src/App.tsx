@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
+import Layout from './components/Layout'
 import Login from './pages/Auth/Login'
 import Providers from './pages/Settings/Providers'
 import ClientList from './pages/Clients/ClientList'
@@ -27,83 +28,46 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Públicas */}
-        <Route path="/login"          element={<Login />} />
-        <Route path="/intake/:token"  element={<IntakeForm />} />
+        <Route path="/login"         element={<Login />} />
+        <Route path="/intake/:token" element={<IntakeForm />} />
 
-        {/* Protegidas */}
-        <Route path="/"                               element={<PrivateRoute><Navigate to="/dashboard" replace /></PrivateRoute>} />
-        <Route path="/dashboard"                      element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/clients"                        element={<PrivateRoute><ClientList /></PrivateRoute>} />
-        <Route path="/clients/new"                    element={<PrivateRoute><ClientForm /></PrivateRoute>} />
-        <Route path="/clients/:id"                    element={<PrivateRoute><ClientDetails /></PrivateRoute>} />
-        <Route path="/clients/:id/edit"               element={<PrivateRoute><ClientForm /></PrivateRoute>} />
-        <Route path="/clients/:id/intake"             element={<PrivateRoute><InternalIntakePage /></PrivateRoute>} />
-        <Route path="/processes"                          element={<PrivateRoute><ProcessList /></PrivateRoute>} />
-        <Route path="/processes/new"                      element={<PrivateRoute><ProcessForm /></PrivateRoute>} />
-        <Route path="/processes/:id"                      element={<PrivateRoute><ProcessDetails /></PrivateRoute>} />
-        <Route path="/processes/:id/edit"                 element={<PrivateRoute><ProcessForm /></PrivateRoute>} />
-        <Route path="/processes/:id/petition"             element={<PrivateRoute><PetitionAssembler /></PrivateRoute>} />
-        <Route path="/processes/:id/videos"              element={<PrivateRoute><VideoManager /></PrivateRoute>} />
-        <Route path="/financeiro"                         element={<PrivateRoute><FinancialDashboard /></PrivateRoute>} />
-        <Route path="/solicitacoes"                       element={<PrivateRoute><CaseRequests /></PrivateRoute>} />
-        <Route path="/configuracoes/provedores"        element={<PrivateRoute><SettingsProvidersPage /></PrivateRoute>} />
-
-        {/* Portal do cliente (layout separado) */}
-        <Route path="/portal/login"  element={<PortalLogin />} />
+        {/* Portal do cliente (layout próprio) */}
+        <Route path="/portal/login" element={<PortalLogin />} />
         <Route path="/portal" element={<PortalLayout />}>
-          <Route path="dashboard"    element={<PortalDashboard />} />
+          <Route path="dashboard"     element={<PortalDashboard />} />
           <Route path="processos/:id" element={<PortalProcessDetails />} />
-          <Route path="novo-caso"    element={<PortalNewCase />} />
-          <Route path="senha"        element={<PortalChangePassword />} />
+          <Route path="novo-caso"     element={<PortalNewCase />} />
+          <Route path="senha"         element={<PortalChangePassword />} />
         </Route>
 
-        <Route path="*"                               element={<PlaceholderPage title="Página não encontrada" />} />
+        {/* Área protegida — todas as rotas compartilham o Layout com sidebar */}
+        <Route element={<AuthLayout />}>
+          <Route path="/"                            element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard"                   element={<Dashboard />} />
+          <Route path="/clients"                     element={<ClientList />} />
+          <Route path="/clients/new"                 element={<ClientForm />} />
+          <Route path="/clients/:id"                 element={<ClientDetails />} />
+          <Route path="/clients/:id/edit"            element={<ClientForm />} />
+          <Route path="/clients/:id/intake"          element={<InternalIntakePage />} />
+          <Route path="/processes"                   element={<ProcessList />} />
+          <Route path="/processes/new"               element={<ProcessForm />} />
+          <Route path="/processes/:id"               element={<ProcessDetails />} />
+          <Route path="/processes/:id/edit"          element={<ProcessForm />} />
+          <Route path="/processes/:id/petition"      element={<PetitionAssembler />} />
+          <Route path="/processes/:id/videos"        element={<VideoManager />} />
+          <Route path="/financeiro"                  element={<FinancialDashboard />} />
+          <Route path="/solicitacoes"                element={<CaseRequests />} />
+          <Route path="/configuracoes/provedores"    element={<Providers />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   )
 }
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
+function AuthLayout() {
   const { isAuthenticated } = useAuth()
   if (!isAuthenticated) return <Navigate to="/login" replace />
-  return <>{children}</>
-}
-
-function SettingsProvidersPage() {
-  return (
-    <div id="app-layout">
-      <div className="content-page">
-        <div className="content">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-12"><Providers /></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div id="app-layout">
-      <div className="content-page">
-        <div className="content">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-12">
-                <div className="card">
-                  <div className="card-body">
-                    <h4 className="header-title">{title}</h4>
-                    <p className="text-muted">JurisControl — Sistema de Gestão Jurídica</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  return <Layout />
 }

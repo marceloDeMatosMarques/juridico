@@ -25,6 +25,7 @@ function uploadUrl(filename: string): string {
 }
 
 const CATEGORIAS_FIXAS = ['procuracao', 'identidade', 'cnh', 'comprovante_residencia']
+const TIPOS_UNICOS = new Set(['procuracao', 'identidade', 'cpf', 'cnh', 'comprovante_residencia'])
 
 const rotateSchema = z.object({ rotation: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]) })
 const reorderSchema = z.object({ documentIds: z.array(z.string().uuid()) })
@@ -127,6 +128,19 @@ export const documentsController = {
 
       const hash = sha256(finalBuffer)
       const documentType = (req.body.document_type as string | undefined) ?? 'extra'
+
+      // Tipos únicos: verificar se já existe antes de salvar
+      if (TIPOS_UNICOS.has(documentType)) {
+        const existing = await prisma.processDocument.findFirst({
+          where: { process_id: req.params.id, document_type: documentType as DocumentType, deleted_at: null },
+        })
+        if (existing) {
+          res.status(409).json({
+            erro: `Já existe um documento do tipo "${documentType}" neste processo. Remova o anterior antes de enviar um novo.`,
+          })
+          return
+        }
+      }
 
       const isFixo = CATEGORIAS_FIXAS.includes(documentType)
       let orderIndex = isFixo
