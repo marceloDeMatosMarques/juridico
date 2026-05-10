@@ -1,0 +1,594 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── AUTENTICAÇÃO E PAPÉIS ─────────────────────────────
+
+enum Role {
+  advogado
+  assistente
+  cliente
+}
+
+model User {
+  id                        String    @id @default(uuid())
+  name                      String
+  email                     String    @unique
+  password_hash             String
+  phone                     String?
+  role                      Role      @default(advogado)
+  oab_number                String?
+  oab_state                 String?
+  // Microsoft OAuth
+  microsoft_access_token    String?   @db.Text
+  microsoft_refresh_token   String?   @db.Text
+  microsoft_token_expires_at DateTime?
+  // Google OAuth
+  google_access_token       String?   @db.Text
+  google_refresh_token      String?   @db.Text
+  google_token_expires_at   DateTime?
+  google_email              String?
+  // Dados pessoais (para procuração do advogado)
+  gender                    String?
+  marital_status            String?
+  // Preferências de provider
+  storage_provider          String    @default("onedrive")
+  calendar_provider         String    @default("outlook")
+  // WhatsApp
+  whatsapp_connected        Boolean   @default(false)
+  whatsapp_instance_id      String?
+  portal_password_changed   Boolean   @default(false)
+  // Relações
+  clients                   Client[]
+  client_portal             Client?   @relation("ClientPortalUser")
+  processes                 Process[]
+  hearings                  Hearing[]
+  financial_records         FinancialRecord[]
+  whatsapp_messages         WhatsAppMessage[]
+  templates                 DocumentTemplate[]
+  court_notifications       CourtNotification[]
+  settings                  Settings?
+  created_at                DateTime  @default(now())
+  updated_at                DateTime  @updatedAt
+}
+
+// ─── CLIENTES (CRM) ────────────────────────────────────
+
+enum ClientStatus {
+  ativo
+  inativo
+}
+
+model Client {
+  id              String       @id @default(uuid())
+  user_id         String
+  user            User         @relation(fields: [user_id], references: [id])
+  full_name       String
+  cpf             String?
+  rg              String?
+  birth_date      DateTime?
+  email           String?
+  phone           String?
+  whatsapp        String?
+  address         String?
+  address_number  String?
+  complement      String?
+  neighborhood    String?
+  city            String?
+  state           String?
+  zip_code        String?
+  notes           String?      @db.Text
+  gender          String?
+  social_name     String?
+  marital_status  String?
+  nationality     String?      @default("Brasileiro")
+  profession      String?
+  status          ClientStatus @default(ativo)
+  deleted_at      DateTime?
+  portal_user_id  String?      @unique
+  portal_user     User?        @relation("ClientPortalUser", fields: [portal_user_id], references: [id])
+  portal_enabled  Boolean      @default(false)
+  processes       Process[]
+  case_requests   CaseRequest[]
+  whatsapp_messages WhatsAppMessage[]
+  consents        Consent[]
+  intake_tokens   IntakeToken[]
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+}
+
+// ─── LGPD — CONSENTIMENTO ─────────────────────────────
+
+model Consent {
+  id          String    @id @default(uuid())
+  client_id   String
+  client      Client    @relation(fields: [client_id], references: [id])
+  purpose     String
+  granted_at  DateTime  @default(now())
+  revoked_at  DateTime?
+  ip_address  String?
+  user_agent  String?
+}
+
+// ─── TOKENS DE INTAKE ────────────────────────────────
+
+model IntakeToken {
+  id          String    @id @default(uuid())
+  process_id  String?
+  client_id   String?
+  client      Client?   @relation(fields: [client_id], references: [id])
+  token       String    @unique @default(uuid())
+  expires_at  DateTime
+  used_at     DateTime?
+  metadata    Json?
+  created_at  DateTime  @default(now())
+}
+
+// ─── TEMPLATES DE PEÇAS JURÍDICAS ───────────────────
+
+enum TemplateType {
+  procuracao
+  contrato_honorarios
+  notificacao_extrajudicial
+  requerimento
+  outro
+}
+
+model DocumentTemplate {
+  id           String       @id @default(uuid())
+  user_id      String
+  user         User         @relation(fields: [user_id], references: [id])
+  name         String
+  type         TemplateType
+  content_html String       @db.LongText
+  variables    Json
+  is_default   Boolean      @default(false)
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+}
+
+// ─── PROCESSOS JUDICIAIS ─────────────────────────────
+
+enum ProcessStatus {
+  aberto
+  em_andamento
+  aguardando_audiencia
+  encerrado
+  ganho
+  perdido
+  acordo
+  arquivado
+}
+
+enum ProcessType {
+  civil_consumidor
+  civil_indenizatorio
+  civil_obrigacional
+  trabalhista
+  criminal
+  previdenciario
+  familia
+  tributario
+  administrativo
+  outro
+}
+
+enum CourtSystem {
+  pje
+  eproc
+  projudi
+  saj
+  esaj
+  manual
+}
+
+model Process {
+  id                    String        @id @default(uuid())
+  user_id               String
+  user                  User          @relation(fields: [user_id], references: [id])
+  client_id             String
+  client                Client        @relation(fields: [client_id], references: [id])
+  process_number        String?
+  case_title            String
+  case_description      String?       @db.Text
+  court                 String?
+  judge                 String?
+  opposing_party        String?
+  process_type          ProcessType   @default(civil_consumidor)
+  status                ProcessStatus @default(aberto)
+  open_date             DateTime      @default(now())
+  close_date            DateTime?
+  court_system          CourtSystem?
+  court_email_domain    String?
+  oab_process_link      String?       @db.Text
+  last_court_notification_at DateTime?
+  pending_deadline      DateTime?
+  onedrive_folder_id       String?
+  onedrive_folder_url      String?
+  onedrive_docs_folder_id  String?
+  google_drive_docs_folder_id String?
+  summary_pdf_url          String?       @db.Text
+  summary_pdf_onedrive_id String?
+  ai_summary            String?       @db.Text
+  google_drive_folder_id  String?
+  google_drive_folder_url String?
+  deleted_at            DateTime?
+  intake_completed_at   DateTime?
+  documents             ProcessDocument[]
+  hearings              Hearing[]
+  financial_records     FinancialRecord[]
+  timeline              ProcessTimeline[]
+  outcomes              ProcessOutcome[]
+  court_notifications   CourtNotification[]
+  video_annexes         VideoAnnex[]
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+}
+
+// ─── DOCUMENTOS ──────────────────────────────────────
+
+enum DocumentType {
+  procuracao
+  identidade
+  cpf
+  cnh
+  comprovante_residencia
+  nota_fiscal
+  contrato
+  foto_evidencia
+  video_link
+  pdf_unificado
+  pdf_videos
+  extra
+}
+
+enum StorageType {
+  onedrive
+  physical
+  external_link
+}
+
+model ProcessDocument {
+  id                    String       @id @default(uuid())
+  process_id            String
+  process               Process      @relation(fields: [process_id], references: [id])
+  document_type         DocumentType
+  file_name             String
+  file_url              String?      @db.Text
+  onedrive_item_id      String?
+  onedrive_share_link   String?      @db.Text
+  google_drive_item_id  String?
+  google_drive_share_link String?    @db.Text
+  is_public             Boolean      @default(false)
+  file_type             String?
+  file_size             Int?
+  file_hash             String?
+  storage_type          StorageType  @default(onedrive)
+  physical_location     String?
+  physical_custody_date DateTime?
+  external_link_description String?  @db.Text
+  upload_date           DateTime     @default(now())
+  notes                 String?      @db.Text
+  order_index           Int          @default(0)
+  uploaded_by_role      Role?
+  rotation              Int          @default(0)
+  file_mime             String?
+  ai_classified         Boolean      @default(false)
+  file_path             String?      @db.Text
+  file_password         String?
+  requires_password     Boolean      @default(false)
+  signature_type        String?
+  signature_status      String?
+  deleted_at            DateTime?
+}
+
+// ─── ANEXO DE VÍDEOS ────────────────────────────────
+
+model VideoAnnex {
+  id                String    @id @default(uuid())
+  process_id        String
+  process           Process   @relation(fields: [process_id], references: [id])
+  title             String
+  pdf_url           String?   @db.Text
+  onedrive_item_id  String?
+  public_share_link String?   @db.Text
+  google_drive_item_id   String?
+  google_drive_share_link String? @db.Text
+  storage_provider_used  String  @default("onedrive")
+  document_ids      Json
+  file_hash         String?
+  generated_by      String
+  generated_at      DateTime  @default(now())
+}
+
+// ─── AUDIÊNCIAS ──────────────────────────────────────
+
+enum HearingType {
+  audiencia_instrucao
+  audiencia_conciliacao
+  audiencia_julgamento
+  reuniao_cliente
+  prazo_processual
+  diligencia
+  pericia
+}
+
+enum HearingStatus {
+  agendada
+  realizada
+  cancelada
+  adiada
+}
+
+model Hearing {
+  id                  String        @id @default(uuid())
+  process_id          String
+  process             Process       @relation(fields: [process_id], references: [id])
+  user_id             String
+  user                User          @relation(fields: [user_id], references: [id])
+  title               String
+  description         String?       @db.Text
+  hearing_date        DateTime
+  hearing_time        String
+  location            String?
+  hearing_type        HearingType   @default(audiencia_instrucao)
+  outlook_event_id    String?
+  google_event_id     String?
+  teams_meeting_url   String?       @db.Text
+  reminder_d3_sent    Boolean       @default(false)
+  reminder_d2_sent    Boolean       @default(false)
+  reminder_d1_sent    Boolean       @default(false)
+  reminder_adv_d3     Boolean       @default(false)
+  reminder_adv_d2     Boolean       @default(false)
+  reminder_adv_d1     Boolean       @default(false)
+  status              HearingStatus @default(agendada)
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+}
+
+// ─── FINANCEIRO ──────────────────────────────────────
+
+enum RecordType {
+  honorario
+  despesa
+  reembolso
+  honorario_exito
+}
+
+enum PaymentStatus {
+  pendente
+  parcial
+  pago
+  cancelado
+  atrasado
+}
+
+enum PaymentType {
+  unico
+  parcelado
+}
+
+model FinancialRecord {
+  id                  String        @id @default(uuid())
+  process_id          String
+  process             Process       @relation(fields: [process_id], references: [id])
+  user_id             String
+  user                User          @relation(fields: [user_id], references: [id])
+  record_type         RecordType
+  description         String
+  total_value         Decimal       @db.Decimal(12, 2)
+  cause_value         Decimal?      @db.Decimal(12, 2)
+  percentage          Decimal       @default(30.00) @db.Decimal(5, 2)
+  calculated_fee      Decimal?      @db.Decimal(12, 2)
+  payment_status      PaymentStatus @default(pendente)
+  payment_type        PaymentType   @default(unico)
+  installments_total  Int           @default(1)
+  installments_paid   Int           @default(0)
+  due_date            DateTime?
+  paid_date           DateTime?
+  success_fee_applied Boolean       @default(false)
+  notes               String?       @db.Text
+  installments        Installment[]
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+}
+
+model Installment {
+  id                    String        @id @default(uuid())
+  financial_record_id   String
+  financial_record      FinancialRecord @relation(fields: [financial_record_id], references: [id])
+  installment_number    Int
+  value                 Decimal       @db.Decimal(12, 2)
+  due_date              DateTime
+  paid_date             DateTime?
+  status                PaymentStatus @default(pendente)
+  payment_method        String?
+  receipt_url           String?       @db.Text
+  whatsapp_notified     Boolean       @default(false)
+}
+
+// ─── DESFECHOS DO PROCESSO ───────────────────────────
+
+enum OutcomeType {
+  acordo_extrajudicial
+  acordo_judicial
+  sentenca_procedente
+  sentenca_improcedente
+  recurso_provido
+  recurso_desprovido
+  extincao_sem_merito
+}
+
+model ProcessOutcome {
+  id                    String      @id @default(uuid())
+  process_id            String
+  process               Process     @relation(fields: [process_id], references: [id])
+  outcome_type          OutcomeType
+  agreed_value          Decimal?    @db.Decimal(12, 2)
+  outcome_date          DateTime
+  hearing_id            String?
+  success_fee_applied   Boolean     @default(false)
+  success_fee_value     Decimal?    @db.Decimal(12, 2)
+  notes                 String?     @db.Text
+  created_at            DateTime    @default(now())
+}
+
+// ─── NOTIFICAÇÕES DOS TRIBUNAIS ──────────────────────
+
+enum CourtNotificationSource {
+  pje
+  eproc
+  projudi
+  saj
+  esaj
+  email_manual
+}
+
+enum CourtNotificationType {
+  despacho
+  intimacao
+  sentenca
+  acordao
+  audiencia_agendada
+  juntada_peca
+  determinacao
+  outro
+}
+
+model CourtNotification {
+  id                      String                   @id @default(uuid())
+  process_id              String
+  process                 Process                  @relation(fields: [process_id], references: [id])
+  user_id                 String
+  user                    User                     @relation(fields: [user_id], references: [id])
+  source                  CourtNotificationSource
+  notification_type       CourtNotificationType    @default(outro)
+  original_email_subject  String?
+  original_email_body     String?                  @db.LongText
+  parsed_content          Json?
+  deadline_date           DateTime?
+  deadline_days_remaining Int?
+  is_urgent               Boolean                  @default(false)
+  whatsapp_alert_sent     Boolean                  @default(false)
+  read_at                 DateTime?
+  received_at             DateTime                 @default(now())
+}
+
+model MonitoredCourtDomain {
+  id           String  @id @default(uuid())
+  user_id      String
+  court_name   String
+  email_domain String
+  court_system CourtSystem
+  state        String
+  active       Boolean @default(true)
+  created_at   DateTime @default(now())
+}
+
+// ─── WHATSAPP ────────────────────────────────────────
+
+enum MessageDirection {
+  sent
+  received
+}
+
+enum MessageType {
+  text
+  document
+  audio
+  video
+  image
+}
+
+enum MessageStatus {
+  sent
+  delivered
+  read
+  failed
+}
+
+model WhatsAppMessage {
+  id                  String           @id @default(uuid())
+  user_id             String
+  user                User             @relation(fields: [user_id], references: [id])
+  client_id           String?
+  client              Client?          @relation(fields: [client_id], references: [id])
+  process_id          String?
+  direction           MessageDirection
+  message_type        MessageType      @default(text)
+  content             String?          @db.Text
+  media_url           String?          @db.Text
+  whatsapp_message_id String?
+  status              MessageStatus    @default(sent)
+  sent_at             DateTime         @default(now())
+  created_at          DateTime         @default(now())
+}
+
+model WhatsAppSession {
+  id            String   @id @default(uuid())
+  phone         String   @unique
+  current_state String   @default("idle")
+  context_data  Json?
+  role          Role?
+  user_id       String?
+  client_id     String?
+  last_activity DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+// ─── TIMELINE DO PROCESSO ────────────────────────────
+
+model ProcessTimeline {
+  id          String   @id @default(uuid())
+  process_id  String
+  process     Process  @relation(fields: [process_id], references: [id])
+  user_id     String?
+  action_type String
+  description String   @db.Text
+  metadata    Json?
+  created_at  DateTime @default(now())
+}
+
+// ─── PORTAL — SOLICITAÇÕES DE NOVO CASO ─────────────
+
+model CaseRequest {
+  id          String   @id @default(uuid())
+  client_id   String
+  client      Client   @relation(fields: [client_id], references: [id])
+  description String   @db.Text
+  area        String?
+  urgency     String   @default("normal")
+  status      String   @default("pendente")
+  process_id  String?
+  created_at  DateTime @default(now())
+}
+
+// ─── CONFIGURAÇÕES DO USUÁRIO ────────────────────────
+
+model Settings {
+  id                              String   @id @default(uuid())
+  user_id                         String   @unique
+  user                            User     @relation(fields: [user_id], references: [id])
+  default_fee_percentage          Decimal  @default(30.00) @db.Decimal(5, 2)
+  storage_provider                String   @default("onedrive")
+  onedrive_root_folder            String?  @default("JurisControl")
+  google_drive_root_folder_id     String?
+  calendar_provider               String   @default("outlook")
+  notification_days_before        Json     @default("[3, 2, 1]")
+  auto_send_whatsapp_reminders    Boolean  @default(true)
+  auto_monitor_court_emails       Boolean  @default(false)
+  gemini_features_enabled         Boolean  @default(true)
+  office_logo_url                 String?  @db.Text
+  office_name                     String?
+  office_address                  String?  @db.Text
+  evolution_api_url               String?
+  evolution_api_key               String?  @db.Text
+  evolution_instance_name         String?
+  created_at                      DateTime @default(now())
+  updated_at                      DateTime @updatedAt
+}

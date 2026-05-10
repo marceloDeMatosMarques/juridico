@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+    <head>
+        <meta charset="utf-8" />
+        <title>Dashboard | Venix - Responsive Admin Dashboard Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc."/>
+        <meta name="author" content="Zoyothemes"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+        <!-- plugin css -->
+        <link href="assets/libs/jsvectormap/jsvectormap.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- App css -->
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-style" />
+
+        <!-- Icons -->
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+    </head>
+
+    <!-- body start -->
+    <body data-menu-color="dark" data-sidebar="default">
+
+        <!-- Start Begin Page -->
+        <div id="app-layout">
+            
+            <!-- Topbar Start -->
+<div class="topbar-custom">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between">
+            <ul class="list-unstyled topnav-menu mb-0 d-flex align-items-center">
+                <li>
+                    <button type="button" class="button-toggle-menu nav-link">
+                        <iconify-icon icon="solar:hamburger-menu-linear" class="fs-22 align-middle text-dark"></iconify-icon>
+                    </button>
+                </li>
+                <li class="d-none d-lg-block">
+                    <form class="app-search d-none d-md-block me-auto">
+                        <div class="position-relative topbar-search">
+                            <iconify-icon icon="solar:minimalistic-magnifer-line-duotone"
+                                class="fs-18 align-middle text-dark position-absolute text-dark top-50 translate-middle-y ms-2">
+                            </iconify-icon>
+                            <input type="text" class="form-control shadow-none" placeholder="Search for somethings" />
+                        </div>
+                    </form>
+                </li>
+            </ul>
+
+            <ul class="list-unstyled topnav-menu mb-0 d-flex align-items-center gap-2">
+                <li class="dropdown topbar-dropdown">
+                    <a class="nav-link dropdown-toggle me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <iconify-icon icon="solar:earth-bold-duotone" class="fs-22 align-middle" id="selected-language-image"></iconify-icon>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-end profile-dropdown">
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item" data-translator-lang="en">
+                            <img src="assets/images/flags/lang-flag/circle-us.svg" class="me-2" id="selected-language-image"><span class="align-middle">English</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item" data-translator-lang="hi">
+                            <img src="assets/images/flags/lang-flag/circle-us.svg" class="me-2" id="selected-language-image"><span class="align-middle">Hindi</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <img src="assets/images/flags/lang-flag/circle-de.svg" class="me-2" id="selected-language-image"> <span class="align-middle">German</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <img src="assets/images/flags/lang-flag/circle-ca.svg" class="me-2" id="selected-language-image"> <span class="align-middle">Canada</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <img src="assets/images/flags/lang-flag/circle-au.svg" class="me-2" id="selected-language-image"> <span class="align-middle">Australia</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <img src="assets/images/flags/lang-flag/circle-ru.svg" class="me-2" id="selected-language-image"> <span class="align-middle">Russian</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item">
+                            <img src="assets/images/flags/lang-flag/circle-si.svg" class="me-2" id="selected-language-image"> <span class="align-middle">Italian</span>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Button Trigger Customizer Offcanvas -->
+                <li class="d-none d-sm-flex">
+                    <button type="button" class="btn nav-link" data-toggle="fullscreen">
+                        <iconify-icon icon="solar:full-screen-bold-duotone" class="fs-22 align-middle text-dark fullscreen noti-icon"></iconify-icon>
+                    </button>
+                </li>
+
+                <!-- Light/Dark Mode Button Themes -->
+                <li class="d-none d-sm-flex">
+                    <button type="button" class="btn nav-link d-flex align-items-center justify-content-center"
+                        id="light-dark-mode">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <iconify-icon icon="solar:sun-2-bold-duotone" class="fs-22 text-dark align-middle dark-mode"></iconify-icon>
+                            <iconify-icon icon="solar:moon-bold-duotone" class="fs-22 text-dark align-middle light-mode"></iconify-icon>
+                        </div>
+                    </button>
+                </li>
+
+                <!-- Notifications -->
+                <li class="dropdown notification-list topbar-dropdown">
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false" data-bs-auto-close="outside">
+                        <iconify-icon icon="solar:bell-bing-bold-duotone" class="fs-22 text-dark align-middle"></iconify-icon>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-end dropdown-lg dropdown-notifications">
+                        
+                        <div class="dropdown-item noti-title">
+                            <p class="m-0 fs-14 mb-0 fw-medium text-dark">
+                                <span class="float-end">
+                                    <a href="" class="text-dark">
+                                        <small>
+                                            <iconify-icon icon="solar:close-circle-broken" class="fs-20 text-dark align-middle light-mode"></iconify-icon>
+                                        </small>
+                                    </a>
+                                </span>
+                                Your Notifications
+                            </p>
+                        </div>
+
+                        <!-- Navbar -->
+                        <div class="notification-tabs">
+                            <div class="border-bottom border-dashed">
+                                <ul class="nav nav-tabs nav-tabs-custom border-bottom-0 mb-2" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link-tab mx-0 active fw-medium" data-bs-toggle="tab" href="#viewAll" role="tab" aria-selected="true">
+                                            View All
+                                            <span class="badge bg-light ms-1 text-dark rounded-2 fs-12">24</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item text-muted" role="presentation">
+                                        <a class="nav-link-tab mx-0 fw-medium" data-bs-toggle="tab" href="#files" role="tab" aria-selected="false" tabindex="-1">Projects</a>
+                                    </li>
+                                    <li class="nav-item text-muted" role="presentation">
+                                        <a class="nav-link-tab mx-0 fw-medium" data-bs-toggle="tab" href="#jobs" role="tab" aria-selected="false" tabindex="-1">Team</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="ms-0 noti-scroll" data-simplebar>
+                            <div class="tab-content" id="myTabContent">
+
+                                <div class="tab-pane fade show active" id="viewAll" role="tabpanel" aria-labelledby="all-tab" tabindex="0">
+                                    <div class="tab-pane-notification">
+
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed pt-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-03.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Caitlyn</span> commented in </p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>File</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Friday 3:12 PM</small>
+                                                    <small class="text-muted">2 hours ago</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded-3">
+                                                    <p class="mb-0 user-msg fs-13">How long will it take to finish this task? The client is waiting on this feature.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+    
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-04.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Mathide</span> followed you </p>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 3:12 PM</small>
+                                                    <small class="text-muted">2 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+    
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-06.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Zaid</span> invited you to </p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>Blog design</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Friday 3:12 PM</small>
+                                                    <small class="text-muted">3 hours ago</small>
+                                                </div>
+                                                <p class="d-inline-flex gap-2 mb-0">
+                                                    <button type="button" class="btn btn-sm btn-light" data-bs-toggle="button">Decline</button>
+                                                    <button type="button" aria-label="Accept Invitation" class="btn btn-sm btn-dark" data-bs-toggle="button" aria-pressed="true">Accept</button>
+                                                </p>
+                                            </div>
+                                        </a>
+
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted pb-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-10.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Lily-Rose</span> shared a file in</p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>Marketing site</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-danger ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Friday 1:40 PM</small>
+                                                    <small class="text-muted">4 hours ago</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="d-flex flex-column">
+                                                            <p class="mb-1 fs-13 text-dark">Marketing site v4.0.fig</p>
+                                                            <small class="text-muted">14 MB</small>
+                                                        </div>
+                                                        <div class="ms-auto">
+                                                            <iconify-icon icon="solar:download-minimalistic-bold-duotone" class="fs-22 text-dark align-middle light-mode"></iconify-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- projects -->
+                                <div class="tab-pane fade" id="files" role="tabpanel" aria-labelledby="projects-tab" tabindex="0">
+                                    <div class="tab-pane-notification">
+
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed pt-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-05.svg" class="rounded-circle avatar avatar-sm" alt="user image" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Eleanor</span> commented in </p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>Project Alpha</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Monday 10:30 AM</small>
+                                                    <small class="text-muted">1 hour ago</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded-3">
+                                                    <p class="mb-0 user-msg fs-13">Please update the UI components before tomorrow's meeting.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-07.svg" class="rounded-circle avatar avatar-sm" alt="user image" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Leonard</span> followed you </p>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Monday 10:12 AM</small>
+                                                    <small class="text-muted">1 hour ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-08.svg" class="rounded-circle avatar avatar-sm" alt="user image" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Sophia</span> invited you to </p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>Landing Page Review</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Monday 9:50 AM</small>
+                                                    <small class="text-muted">2 hours ago</small>
+                                                </div>
+                                                <p class="d-inline-flex gap-2 mb-0">
+                                                    <button type="button" class="btn btn-sm btn-light" data-bs-toggle="button">Decline</button>
+                                                    <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="button" aria-pressed="true">Accept</button>
+                                                </p>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted pb-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-09.svg" class="rounded-circle avatar avatar-sm" alt="user image" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Marcus</span> shared a file in</p>
+                                                    <span class="badge badge-custom d-flex align-items-center gap-1 text-dark fs-12">
+                                                        <iconify-icon icon="solar:chart-square-broken" class="fs-14 text-dark align-middle"></iconify-icon>
+                                                        <span>Client Assets</span>
+                                                    </span>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                    <small class="text-muted">Monday 9:00 AM</small>
+                                                    <small class="text-muted">3 hours ago</small>
+                                                </div>
+                                                <div class="p-2 bg-light rounded-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="d-flex flex-column">
+                                                            <p class="mb-1 fs-13 text-dark">Client-Brief-v2.pdf</p>
+                                                            <small class="text-muted">2 MB</small>
+                                                        </div>
+                                                        <div class="ms-auto">
+                                                            <iconify-icon icon="solar:download-minimalistic-bold-duotone" class="fs-22 text-dark align-middle light-mode"></iconify-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane fade" id="jobs" role="tabpanel" aria-labelledby="teams-tab" tabindex="0">
+                                    <div class="tab-pane-notification">
+
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed pt-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-05.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Andrew</span> assigned you a task</p>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 2:30 PM</small>
+                                                    <small class="text-muted">3 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-07.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Olivia</span> mentioned you in a project comment</p>
+                                                    <span class="badge-dot bg-danger ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 1:15 PM</small>
+                                                    <small class="text-muted">4 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-08.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Sophia</span> uploaded new project files</p>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 12:00 PM</small>
+                                                    <small class="text-muted">5 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted border-bottom border-dashed">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-09.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Daniel</span> shared project access with you</p>
+                                                    <span class="badge-dot bg-primary ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 11:30 AM</small>
+                                                    <small class="text-muted">6 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        
+                                        <a href="javascript:void(0);" class="dropdown-item notify-item-data text-muted pb-0">
+                                            <div class="notify-icon">
+                                                <img src="assets/images/users/avatar/avatar-11.svg" class="rounded-circle avatar avatar-sm" alt="user images" />
+                                            </div>
+                                            <div class="notify-content">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <p class="mb-0 me-1"><span class="text-dark fw-medium">Isabella</span> completed the design review</p>
+                                                    <span class="badge-dot bg-danger ms-auto"></span>
+                                                </div>
+                                                <div class="d-flex align-items-center justify-content-between mb-0">
+                                                    <small class="text-muted">Friday 10:45 AM</small>
+                                                    <small class="text-muted">7 hours ago</small>
+                                                </div>
+                                            </div>
+                                        </a>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- User Dropdown -->
+                <li class="dropdown notification-list topbar-dropdown">
+                    <a class="nav-link dropdown-toggle nav-user me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="assets/images/users/avatar/avatar-07.svg" alt="user-image" class="img-fluid " />
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end profile-dropdown">
+                        <!-- item-->
+                        <div class="dropdown-header noti-title border-bottom border-dashed d-flex align-items-center">
+                            <img src="assets/images/users/avatar/avatar-07.svg" alt="user-image" class="avatar avatar-xs rounded-circle me-2" />
+                            <h6 class="text-overflow m-0">Welcome !</h6>
+                        </div>
+
+                        <!-- item-->
+                        <a href="pages-profile.html" class="dropdown-item notify-item border-bottom border-dashed">
+                            <iconify-icon icon="solar:user-bold-duotone" class="fs-18 align-middle" id="selected-language-image"></iconify-icon>
+                            <span>My Account</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="page-profile.html" class="dropdown-item notify-item border-bottom border-dashed">
+                            <iconify-icon icon="solar:settings-bold-duotone" class="fs-18 align-middle" id="selected-language-image"></iconify-icon>
+                            <span>Setting</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="auth-lock-screen.html" class="dropdown-item notify-item border-bottom border-dashed">
+                            <iconify-icon icon="solar:shield-keyhole-bold-duotone" class="fs-18 align-middle" id="selected-language-image"></iconify-icon>
+                            <span>Lock Screen</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="auth-logout.html" class="dropdown-item notify-item">
+                            <iconify-icon icon="solar:logout-2-bold-duotone" class="fs-18 align-middle" id="selected-language-image"></iconify-icon>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- end Topbar -->
+
+            <!-- Left Sidebar Start -->
+            <div class="app-sidebar-menu">
+                <div class="h-100" data-simplebar>
+
+                    <!--- Sidemenu -->
+                    <div id="sidebar-menu">
+
+                        <div class="logo-box">
+                            <a href="index.html" class="logo logo-light">
+                                <span class="logo-sm">
+                                    <img src="assets/images/logo-sm.png" alt="" height="22">
+                                </span>
+                                <span class="logo-lg">
+                                    <img src="assets/images/logo-light.png" alt="" height="26">
+                                </span>
+                            </a>
+                            <a href="index.html" class="logo logo-dark">
+                                <span class="logo-sm">
+                                    <img src="assets/images/logo-sm.png" alt="" height="22">
+                                </span>
+                                <span class="logo-lg">
+                                    <img src="assets/images/logo-dark.png" alt="" height="26">
+                                </span>
+                            </a>
+                        </div>
+
+                        <ul id="side-navbar">
+
+                            <li class="menu-title">Menu</li>
+
+                            <li>
+                                <a href="#sidebarDashboards" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:widget-6-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Dashboards </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarDashboards">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="index.html" class="tp-link"><i class="ti ti-point"></i>CRM</a>
+                                        </li>
+                                        <li>
+                                            <a href="ecommerce.html" class="tp-link"><i class="ti ti-point"></i>E Commerce</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li class="menu-title mt-2">Apps</li>
+
+                            <li>
+                                <a href="apps-todolist.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:server-minimalistic-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Todo List </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarContacts" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:smartphone-2-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Contacts </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+
+                                <div class="collapse" id="sidebarContacts">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="apps-contacts.html" class="tp-link"><i class="ti ti-point"></i>Contacts Card</a>
+                                        </li>
+                                        <li>
+                                            <a href="app-contacts-list.html" class="tp-link"><i class="ti ti-point"></i>Contacts List</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="apps-calendar.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Calendar </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="apps-chat.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:chat-dots-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Chat </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="mail.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:mailbox-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Email </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="app-integrations.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:mirror-left-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Integrations </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="app-notes.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:notes-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Notes </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="app-file-manager.html" class="tp-link">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:file-text-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> File Manager </span>
+                                </a>
+                            </li>
+
+                            <li class="menu-title mt-2">Pages</li>
+
+                            <li>
+                                <a href="#sidebarAuth" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:login-3-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Authentication </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarAuth">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="auth-login.html" class="tp-link"><i class="ti ti-point"></i>Log In</a>
+                                        </li>
+                                        <li>
+                                            <a href="auth-register.html" class="tp-link"><i class="ti ti-point"></i>Register</a>
+                                        </li>
+                                        <li>
+                                            <a href="auth-recoverpw.html" class="tp-link"><i class="ti ti-point"></i>Recover Password</a>
+                                        </li>
+                                        <li>
+                                            <a href="auth-lock-screen.html" class="tp-link"><i class="ti ti-point"></i>Lock Screen</a>
+                                        </li>
+                                        <li>
+                                            <a href="auth-confirm-mail.html" class="tp-link"><i class="ti ti-point"></i>Confirm Mail</a>
+                                        </li>
+                                        <li>
+                                            <a href="email-verification.html" class="tp-link"><i class="ti ti-point"></i>Email Verification</a>
+                                        </li>
+                                        <li>
+                                            <a href="maintenance.html" class="tp-link"><i class="ti ti-point"></i>Maintenance</a>
+                                        </li>
+                                        <li>
+                                            <a href="auth-logout.html" class="tp-link"><i class="ti ti-point"></i>Logout</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarError" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:plain-3-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Error Pages </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarError">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="error-404.html" class="tp-link"><i class="ti ti-point"></i>Error 404</a>
+                                        </li>
+                                        <li>
+                                            <a href="error-500.html" class="tp-link"><i class="ti ti-point"></i>Error 500</a>
+                                        </li>
+                                        <li>
+                                            <a href="error-503.html" class="tp-link"><i class="ti ti-point"></i>Error 503</a>
+                                        </li>
+                                        <li>
+                                            <a href="error-429.html" class="tp-link"><i class="ti ti-point"></i>Error 429</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarExpages" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:tuning-square-2-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Utility </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarExpages">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="pages-starter.html" class="tp-link"><i class="ti ti-point"></i>Starter</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-profile.html" class="tp-link"><i class="ti ti-point"></i>Profile</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-pricing.html" class="tp-link"><i class="ti ti-point"></i>Pricing</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-timeline.html" class="tp-link"><i class="ti ti-point"></i>Timeline</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-invoice.html" class="tp-link"><i class="ti ti-point"></i>Invoice</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-faqs.html" class="tp-link"><i class="ti ti-point"></i>FAQs</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-gallery.html" class="tp-link"><i class="ti ti-point"></i>Gallery</a>
+                                        </li>
+                                        <li>
+                                            <a href="pages-coming-soon.html" class="tp-link"><i class="ti ti-point"></i>Coming Soon</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li class="menu-title mt-2">General</li>
+
+                            <li>
+                                <a href="#sidebarBaseui" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:leaf-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Components </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarBaseui">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="ui-accordions.html" class="tp-link"><i class="ti ti-point"></i>Accordions</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-alerts.html" class="tp-link"><i class="ti ti-point"></i>Alerts</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-avatar.html" class="tp-link"><i class="ti ti-point"></i>Avatar</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-badges.html" class="tp-link"><i class="ti ti-point"></i>Badges</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-breadcrumb.html" class="tp-link"><i class="ti ti-point"></i>Breadcrumb</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-buttons.html" class="tp-link"><i class="ti ti-point"></i>Buttons</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-cards.html" class="tp-link"><i class="ti ti-point"></i>Cards</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-collapse.html" class="tp-link"><i class="ti ti-point"></i>Collapse</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-dropdowns.html" class="tp-link"><i class="ti ti-point"></i>Dropdowns</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-video.html" class="tp-link"><i class="ti ti-point"></i>Embed Video</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-grid.html" class="tp-link"><i class="ti ti-point"></i>Grid</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-images.html" class="tp-link"><i class="ti ti-point"></i>Images</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-list.html" class="tp-link"><i class="ti ti-point"></i>List Group</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-modals.html" class="tp-link"><i class="ti ti-point"></i>Modals</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-placeholders.html" class="tp-link"><i class="ti ti-point"></i>Placeholders</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-pagination.html" class="tp-link"><i class="ti ti-point"></i>Pagination</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-popovers.html" class="tp-link"><i class="ti ti-point"></i>Popovers</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-progress.html" class="tp-link"><i class="ti ti-point"></i>Progress</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-scrollspy.html" class="tp-link"><i class="ti ti-point"></i>Scrollspy</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-spinners.html" class="tp-link"><i class="ti ti-point"></i>Spinners</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-tabs.html" class="tp-link"><i class="ti ti-point"></i>Tabs</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-tooltips.html" class="tp-link"><i class="ti ti-point"></i>Tooltips</a>
+                                        </li>
+                                        <li>
+                                            <a href="ui-typography.html" class="tp-link"><i class="ti ti-point"></i>Typography</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                
+                            <li>
+                                <a href="#sidebarWidgetsui" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:winrar-bold-duotone"></iconify-icon><Icon icon="solar:command-bold-duotone" width="15" height="15"  style="color: #fff" />
+                                    </span>
+                                    <span class="sidebar-text"> Widgets </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarWidgetsui">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href='widget-card.html' class="tp-link"><i class="ti ti-point"></i>Widget Card</a>
+                                        </li>
+                                        <li>
+                                            <a href='widget-chart.html' class='tp-link'><i class="ti ti-point"></i>Widget Chart</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarAdvancedUI" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:bolt-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Extended UI </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarAdvancedUI">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="extended-carousel.html" class="tp-link"><i class="ti ti-point"></i>Carousel</a>
+                                        </li>
+                                        <li>
+                                            <a href="extended-notifications.html" class="tp-link"><i class="ti ti-point"></i>Notifications</a>
+                                        </li>
+                                        <li>
+                                            <a href="extended-offcanvas.html" class="tp-link"><i class="ti ti-point"></i>Offcanvas</a>
+                                        </li>
+                                        <li>
+                                            <a href="extended-range-slider.html" class="tp-link"><i class="ti ti-point"></i>Range Slider</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarIcons" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:fire-minimalistic-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Icons </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarIcons">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="icons-feather.html" class="tp-link"><i class="ti ti-point"></i>Feather
+                                                Icons</a>
+                                        </li>
+                                        <li>
+                                            <a href="icons-mdi.html" class="tp-link"><i class="ti ti-point"></i>Material Icons</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarForms" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:planet-3-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Forms </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarForms">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="forms-elements.html" class="tp-link"><i class="ti ti-point"></i>General Elements</a>
+                                        </li>
+                                        <li>
+                                            <a href="forms-validation.html" class="tp-link"><i class="ti ti-point"></i>Validation</a>
+                                        </li>
+                                        <li>
+                                            <a href="forms-quilljs.html" class="tp-link"><i class="ti ti-point"></i>Quilljs Editor</a>
+                                        </li>
+                                        <li>
+                                            <a href="forms-pickers.html" class="tp-link"><i class="ti ti-point"></i>Picker</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarTables" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:bedside-table-3-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Tables </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarTables">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="tables-basic.html" class="tp-link"><i class="ti ti-point"></i>Basic Tables</a>
+                                        </li>
+                                        <li>
+                                            <a href="tables-datatables.html" class="tp-link"><i class="ti ti-point"></i>Data Tables</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarCharts" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:pie-chart-3-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Apex Charts </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarCharts">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href='charts-area.html' class="tp-link"><i class="ti ti-point"></i>Area</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-bar.html' class="tp-link"><i class="ti ti-point"></i>Bar</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-boxplot.html' class="tp-link"><i class="ti ti-point"></i>Boxplot</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-bubble.html' class="tp-link"><i class="ti ti-point"></i>Bubble</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-candlestick.html' class="tp-link"><i class="ti ti-point"></i>Candlestick</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-column.html' class="tp-link"><i class="ti ti-point"></i>Column</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-funnel.html' class="tp-link"><i class="ti ti-point"></i>Funnel</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-heatmap.html' class="tp-link"><i class="ti ti-point"></i>Heatmap</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-line.html' class="tp-link"><i class="ti ti-point"></i>Line</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-mixed.html' class="tp-link"><i class="ti ti-point"></i>Mixed</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-pie.html' class="tp-link"><i class="ti ti-point"></i>Pie</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-polararea.html' class="tp-link"><i class="ti ti-point"></i>Polar</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-radar.html' class="tp-link"><i class="ti ti-point"></i>Radar</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-radialbar.html' class="tp-link"><i class="ti ti-point"></i>Radialbar</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-rangearea.html' class="tp-link"><i class="ti ti-point"></i>Range Area</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-scatter.html' class="tp-link"><i class="ti ti-point"></i>Scatter</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-timeline.html' class="tp-link"><i class="ti ti-point"></i>Timeline</a>
+                                        </li>
+                                        <li>
+                                            <a href='charts-treemap.html' class="tp-link"><i class="ti ti-point"></i>Treemap</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <li>
+                                <a href="#sidebarMaps" data-bs-toggle="collapse">
+                                    <span class="nav-icon">
+                                        <iconify-icon icon="solar:streets-map-point-bold-duotone"></iconify-icon>
+                                    </span>
+                                    <span class="sidebar-text"> Maps </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <div class="collapse" id="sidebarMaps">
+                                    <ul class="nav-second-level">
+                                        <li>
+                                            <a href="maps-google.html" class="tp-link"><i class="ti ti-point"></i>Google Maps</a>
+                                        </li>
+                                        <li>
+                                            <a href="maps-vector.html" class="tp-link"><i class="ti ti-point"></i>Vector Maps</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End Sidebar -->
+
+                    <div class="clearfix"></div>
+        
+                </div>
+            </div>
+            <!-- Left Sidebar End -->
+
+            <!-- -------------------------------------------------------------- -->
+            <!-- Start Right Content Here -->
+            <!-- -------------------------------------------------------------- -->
+            <div class="content-page">
+                <div class="content">
+
+                    <!-- Start Content-->
+                    <div class="container-fluid">
+                        <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+                            <div class="flex-grow-1">
+                                <h4 class="fs-18 fw-medium m-0">Dashboard</h4>
+                            </div>
+                        </div>
+
+                        <!-- Start Main Widgets -->
+                        <div class="row">
+                            <div class="col-md-6 col-xxl-3">
+                                <div class="card overflow-hidden">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="p-2 bg-primary-subtle rounded-2 border-top border-primary shadow-sm">
+                                                <iconify-icon icon="solar:users-group-two-rounded-broken" class="align-middle fs-26 text-primary"></iconify-icon>
+                                            </div>
+
+                                            <div class="d-flex flex-column">
+                                                <h5 class="title fs-14 fw-normal text-dark mb-1">Active Users</h5>
+                                                <div class="fs-18 fw-medium mb-0 me-2 text-dark mb-1">12,345</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-muted-color border-top d-flex align-content-center justify-content-between py-2 overflow-hidden">
+                                        <span class="text-success"><iconify-icon icon="solar:arrow-up-bold-duotone" class="align-middle fs-16 text-success"></iconify-icon>12%</span>
+                                        <p class="mb-0 text-dark">From last the month</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xxl-3">
+                                <div class="card overflow-hidden">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="p-2 bg-warning-subtle rounded-2 border-top border-warning shadow-sm">
+                                                <iconify-icon icon="solar:phone-rounded-broken" class="align-middle fs-26 text-warning"></iconify-icon>
+                                            </div>
+
+                                            <div class="d-flex flex-column">
+                                                <div class="fs-14 fw-normal text-dark mb-1">New Contacts</div>
+                                                <div class="fs-18 fw-medium mb-0 me-2 text-dark mb-1">1,805</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-muted-color border-top d-flex align-content-center justify-content-between py-2 overflow-hidden">
+                                        <span class="text-danger"><iconify-icon icon="solar:arrow-down-bold-duotone" class="align-middle fs-16 text-danger"></iconify-icon>5%</span>
+                                        <p class="mb-0 text-dark">From last the month</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xxl-3">
+                                <div class="card overflow-hidden">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="p-2 bg-success-subtle rounded-2 border-top border-success shadow-sm">
+                                                <iconify-icon icon="solar:verified-check-broken" class="align-middle fs-26 text-success"></iconify-icon>
+                                            </div>
+
+                                            <div class="d-flex flex-column">
+                                                <div class="fs-14 fw-normal text-dark mb-1">Revenue Rate</div>
+                                                <div class="fs-18 fw-medium mb-0 me-2 text-dark mb-1">35%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-muted-color border-top d-flex align-content-center justify-content-between py-2 overflow-hidden">
+                                        <span class="text-success"><iconify-icon icon="solar:arrow-up-bold-duotone" class="align-middle fs-16 text-success"></iconify-icon>9%</span>
+                                        <p class="mb-0 text-dark">From last the month</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-xxl-3">
+                                <div class="card overflow-hidden">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="p-2 bg-danger-subtle rounded-2 border-top border-danger shadow-sm">
+                                                <iconify-icon icon="solar:chat-round-money-broken" class="align-middle fs-26 text-danger"></iconify-icon>
+                                            </div>
+
+                                            <div class="d-flex flex-column">
+                                                <div class="fs-14 fw-normal text-dark mb-1">Refunds</div>
+                                                <div class="fs-18 fw-medium mb-0 me-2 text-dark mb-1">218</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-muted-color border-top d-flex align-content-center justify-content-between py-2 overflow-hidden">
+                                        <span class="text-danger"><iconify-icon icon="solar:arrow-up-bold-duotone" class="align-middle fs-16 text-danger"></iconify-icon>22%</span>
+                                        <p class="mb-0 text-dark">Processed this month</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Start Main Widgets -->
+
+                        <!-- Start Revenue and Recent Widgets -->
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-xl-7 col-sm-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Revenue Summary</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div id="revenue-summary-chart" style="height:355px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-12 col-xl-5 col-sm-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Recent Activity</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body pt-0">
+                                        <ul class="list-group list-group-flush list-group-no-gutters">
+
+                                            <li class="list-group-item border rounded-2 px-2 py-2 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="assets/images/users/avatar/avatar-04.svg" class="avatar avatar-sm rounded-circle me-3"/>
+
+                                                    <div class="d-flex flex-column align-content-center w-100">
+                                                        <div class="d-flex justify-content-between align-content-center mb-1">
+                                                            <h5 class="text-dark fs-15 fw-normal mb-0">Sophia Zhang</h5>
+                                                            <p class="mb-0 text-muted fw-normal fs-13">45m ago</p>
+                                                        </div>
+                                                        <p class="mb-0 fs-13 text-muted">Sophia recently submitted a glowing 5-star review praising the quality, performance, and design of the product “Wireless Earbuds Pro.”</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li class="list-group-item border rounded-2 px-2 py-2 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="assets/images/users/avatar/avatar-02.svg" class="avatar avatar-sm rounded-circle me-3" />
+
+                                                    <div class="d-flex flex-column align-content-center w-100">
+                                                        <div class="d-flex justify-content-between align-content-center mb-1">
+                                                            <h5 class="text-dark fs-15 fw-normal mb-0">Adeline Wijaya</h5>
+                                                            <p class="mb-0 text-muted fw-normal">3h ago</p>
+                                                        </div>
+                                                        <p class="mb-0 fs-13 text-muted">Adeline signed up as a new customer on the online store, providing her email address and phone number during registration.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li class="list-group-item border rounded-2 px-2 py-2 mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="assets/images/users/avatar/avatar-03.svg" class="avatar avatar-sm rounded-circle me-3" />
+
+                                                    <div class="d-flex flex-column align-content-center w-100">
+                                                        <div class="d-flex justify-content-between align-content-center mb-1">
+                                                            <h5 class="text-dark fs-15 fw-normal mb-0">Michael Lee</h5>
+                                                            <p class="mb-0 text-muted fw-normal">1h ago</p>
+                                                        </div>
+                                                        <p class="mb-0 fs-13 text-muted">Michael recently updated the shipping address for his order to ensure the package is delivered to the correct location on time.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                            <li class="list-group-item border rounded-2 px-2 py-2 mb-0">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="assets/images/users/avatar/avatar-08.svg" class="avatar avatar-sm rounded-circle me-3" />
+
+                                                    <div class="d-flex flex-column align-content-center w-100">
+                                                        <div class="d-flex justify-content-between align-content-center mb-1">
+                                                            <h5 class="text-dark fs-15 fw-normal mb-0">Daniel Martins</h5>
+                                                            <p class="mb-0 text-muted fw-normal">15m ago</p>
+                                                        </div>
+                                                        <p class="mb-0 fs-13 text-muted">Daniel placed an order for the “Smartwatch X1” and chose express delivery to receive the product quickly and efficiently.</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Revenue and Recent Widgets Widgets -->
+                        
+                        <!-- Start Lead Conversion Chart -->
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-xl-4 col-sm-12">
+                                <div class="card overflow-hidden">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Lead Conversion</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div id="lead-conversion-chart" style="height:240px;"></div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 col-md-12 col-xl-4 col-sm-12">
+                                <div class="card overflow-hidden">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Customer Acquisition Cost</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div id="customer-acquisition-cost" style="height:240px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-12 col-xl-4 col-sm-12">
+                                <div class="card overflow-hidden">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Countries Status</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div id="countries-status-chart" style="height:240px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Lead Conversion Chart -->
+                        
+                        <!-- Start Recent Transaction Orders -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card overflow-hidden">
+                                    <div class="card-header">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="card-title mb-0">Recent Transaction</h5>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <div class="table-responsive border rounded-2">
+                                            <table class="table text-nowrap table-hover table-traffic mb-0">
+
+                                                <thead>
+                                                    <tr>
+                                                        <th>Product Name</th>
+                                                        <th>Price</th>
+                                                        <th>Customer</th>
+                                                        <th>Modified</th>
+                                                        <th>Status</th>
+                                                        <th class="text-end">Action</th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="assets/images/products/iphone.png" class="avatar avatar-sm rounded-2 border me-3 mb-0 p-1" />
+                                                            <div>
+                                                                <p class="mb-0 text-dark fs-14">iPhone 15 Pro Max</p>
+                                                                <p class="text-muted fs-13 mb-0">256Gb, Grey</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">$1,198.00</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">Shani Gracia</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-muted">August 18, 2023</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-secondary fw-medium fs-12">
+                                                            <iconify-icon icon="tabler:progress" class="align-middle fs-14 text-secondary"></iconify-icon>
+                                                            On Process
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">                                                       
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <iconify-icon icon="solar:pen-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                            <iconify-icon icon="solar:trash-bin-2-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="assets/images/products/watch-01.png" class="avatar avatar-sm rounded-2 border me-3 mb-0 p-1" />
+                                                            <div>
+                                                                <p class="mb-0 text-dark fs-14">Apple Watch SE</p>
+                                                                <p class="text-muted fs-13 mb-0">Grey</p>
+                                                            </div>
+                                                        </div> 
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">$248.00</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">Fiony Tantri</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-muted">March 09, 2023</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-success fw-medium fs-12">
+                                                            <iconify-icon icon="tabler:circle-dashed-check" class="align-middle fs-14 text-success"></iconify-icon>
+                                                            Completed
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">                                                       
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <iconify-icon icon="solar:pen-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                            <iconify-icon icon="solar:trash-bin-2-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="assets/images/products/mac.png" class="avatar avatar-sm rounded-2 border me-3 mb-0 p-1" />
+                                                            <div>
+                                                                <p class="mb-0 text-dark fs-14">MacBook Air 13"</p>
+                                                                <p class="text-muted fs-13 mb-0">512GB, Space Grey</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">$999.00</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">Aziz Asadel</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-muted">June 21, 2023</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-success fw-medium fs-12">
+                                                            <iconify-icon icon="tabler:circle-dashed-check" class="align-middle fs-14 text-success"></iconify-icon>
+                                                            Completed
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">                                                       
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <iconify-icon icon="solar:pen-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                            <iconify-icon icon="solar:trash-bin-2-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="assets/images/products/tablates.png" class="avatar avatar-sm rounded-2 border me-3 mb-0 p-1" />
+                                                            <div>
+                                                                <p class="mb-0 text-dark fs-14">iPad 9</p>
+                                                                <p class="text-muted fs-13 mb-0">Ross Gold</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">$652.00</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">Russell Vazquez</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-muted">November 13, 2023</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-danger fw-medium fs-12">
+                                                            <iconify-icon icon="tabler:circle-dashed-x" class="align-middle fs-14 text-danger"></iconify-icon>
+                                                            Canceled
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">                                                       
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <iconify-icon icon="solar:pen-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                            <iconify-icon icon="solar:trash-bin-2-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="assets/images/products/headphone.png" class="avatar avatar-sm rounded-2 border me-3 mb-0 p-1" />
+                                                            <div>
+                                                                <p class="mb-0 text-dark fs-14">Headphone</p>
+                                                                <p class="text-muted fs-13 mb-0">Black</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">$46.00</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-dark">David Ocasio</p>
+                                                    </td>
+                                                    <td>
+                                                        <p class="mb-0 text-muted">August 21, 2023</p>
+                                                    </td>
+                                                    <td>
+                                                        <span class="text-warning fw-medium fs-12">
+                                                            <iconify-icon icon="tabler:progress" class="align-middle fs-14 text-warning"></iconify-icon>
+                                                            On Process
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">                                                       
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm me-1" data-bs-toggle="tooltip" data-bs-original-title="Edit">
+                                                            <iconify-icon icon="solar:pen-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                        <a aria-label="anchor" class="btn btn-icon btn-sm" data-bs-toggle="tooltip" data-bs-original-title="Delete">
+                                                            <iconify-icon icon="solar:trash-bin-2-bold-duotone" class="align-middle fs-14"></iconify-icon>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                
+                                            </table>
+                                        </div>    
+                                    </div>
+
+                                    <div class="card-footer border-top">
+                                        <div class="row align-items-center">
+                                            <div class="col-sm">
+                                                <div class="text-block text-center text-sm-start">
+                                                    <span>Showing 2 Entries </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-auto">
+                                                <div class="gap-2 justify-content-center d-flex">
+                                                    <ul class="pagination mb-0">
+                                                        <li class="page-item"> 
+                                                            <a class="page-link" href="javascript:void(0);">
+                                                                <iconify-icon icon="solar:arrow-left-linear" class="mb-0"></iconify-icon>
+                                                            </a>
+                                                        </li>
+                                                        <li class="page-item active"> 
+                                                            <a class="page-link" href="javascript:void(0);">1</a>
+                                                        </li>
+                                                        <li class="page-item">
+                                                            <a class="page-link" href="javascript:void(0);">2</a>
+                                                        </li>
+                                                        <li class="page-item">
+                                                            <a class="page-link" href="javascript:void(0);">
+                                                                <iconify-icon icon="solar:arrow-right-linear" class="mb-0"></iconify-icon>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Recent Order -->
+                        </div>
+                        <!-- End Recent Transaction Orders -->
+                        
+                    </div> <!-- container-fluid -->
+                </div> <!-- content -->
+
+                <!-- Footer Start -->
+                <footer class="footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col fs-13 text-muted text-center">
+                                &copy; <script>document.write(new Date().getFullYear())</script> - Made by <a href="#!" class="text-reset fw-semibold">Zoyothemes</a> 
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+                <!-- end Footer -->
+
+            </div>
+            <!-- -------------------------------------------------------------- -->
+            <!-- End Right Content Here -->
+            <!-- -------------------------------------------------------------- -->
+
+        </div>
+        <!-- End Begin Page -->
+
+        <!-- Vendor -->
+        <script src="assets/libs/jquery/jquery.min.js"></script>
+        <script src="assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="assets/libs/iconify-icon/iconify-icon.min.js"></script>
+        <script src="assets/libs/simplebar/simplebar.min.js"></script>
+        <script src="assets/libs/node-waves/waves.min.js"></script>
+        <script src="assets/libs/waypoints/lib/jquery.waypoints.min.js"></script>
+        <script src="assets/libs/jquery.counterup/jquery.counterup.min.js"></script>
+        <script src="assets/libs/feather-icons/feather.min.js"></script>
+
+        <!-- Echarts JS -->
+        <script src="assets/libs/echarts/echarts.min.js"></script>
+
+        <!-- Widgets Init Js -->
+        <script src="assets/js/pages/crm-dashboard.init.js"></script>
+
+        <!-- App js-->
+        <script src="assets/js/app.js"></script>
+
+    </body>
+
+</html>

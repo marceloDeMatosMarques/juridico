@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm audit *)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const j=JSON.parse\\(d\\); Object.values\\(j.vulnerabilities||{}\\).filter\\(v=>v.severity==='high'||v.severity==='critical'\\).forEach\\(v=>console.log\\(v.name, v.severity, v.via?.map?.\\(x=>typeof x==='string'?x:x.title\\).join\\(', '\\)\\)\\)\")",
+      "Bash(npx prisma *)",
+      "Bash(DATABASE_URL=\"mysql://x:x@localhost:3306/x\" npx prisma validate)",
+      "Bash(npm run *)",
+      "Bash(DATABASE_URL=\"mysql://x:x@localhost:3306/x\" npx prisma generate)",
+      "Bash(npx tsc *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(set DATABASE_URL=mysql://x:x@localhost:3306/x)",
+      "Bash(dir /s \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\")",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\backend\\\\src\" -Recurse -File -Name | Where-Object { $_ -match \"\\(monitor|scrape|court|notification|email|pje|eproc\\)\" })",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\frontend\\\\src\" -Recurse -File | Where-Object { $_.Extension -in \".ts\", \".tsx\" } | Select-Object -ExpandProperty Name | Sort-Object | Select-Object -First 50)",
+      "Bash(Get-Content -Path \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\JURISCONTROL_MASTER_PROMPT_FINAL.md\")",
+      "Bash(Select-String -Pattern \"FASE\\\\s+11|fase\\\\s+11|IA com Gemini\" -Context 5)"
+    ]
+  }
+}
