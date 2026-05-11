@@ -22,14 +22,16 @@ import PortalDashboard from './pages/Portal/PortalDashboard'
 import PortalProcessDetails from './pages/Portal/PortalProcessDetails'
 import PortalNewCase from './pages/Portal/PortalNewCase'
 import PortalChangePassword from './pages/Portal/PortalChangePassword'
+import OAuthCallback from './pages/Auth/OAuthCallback'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Públicas */}
-        <Route path="/login"         element={<Login />} />
-        <Route path="/intake/:token" element={<IntakeForm />} />
+        <Route path="/login"          element={<Login />} />
+        <Route path="/auth/callback"  element={<OAuthCallback />} />
+        <Route path="/intake/:token"  element={<IntakeForm />} />
 
         {/* Portal do cliente (layout próprio) */}
         <Route path="/portal/login" element={<PortalLogin />} />

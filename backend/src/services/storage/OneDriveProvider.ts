@@ -83,7 +83,7 @@ export class OneDriveProvider implements IStorageProvider {
     return { itemId: data.id, publicLink, provider: 'onedrive', fileName, fileSize: buffer.length }
   }
 
-  async createUploadSession(fileName: string, folderId: string, _fileSize: number): Promise<UploadSessionResult> {
+  async createUploadSession(fileName: string, folderId: string, _fileSize: number, _mimeType?: string): Promise<UploadSessionResult> {
     const token = await this.graphService.getValidToken()
     const { data } = await axios.post(
       `${GRAPH}/me/drive/items/${folderId}:/${encodeURIComponent(fileName)}:/createUploadSession`,

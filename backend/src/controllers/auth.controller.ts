@@ -78,6 +78,11 @@ export const authController = {
         return
       }
 
+      if (!user.password_hash) {
+        res.status(401).json({ erro: 'Esta conta usa login via Google ou Microsoft. Use o botão correspondente.' })
+        return
+      }
+
       const valid = await bcrypt.compare(password, user.password_hash)
       if (!valid) {
         res.status(401).json({ erro: 'Credenciais inválidas' })
@@ -131,13 +136,22 @@ export const authController = {
 
   // ── Microsoft OAuth ────────────────────────────────────────────────
 
-  microsoftRedirect(_req: Request, res: Response): void {
+  microsoftRedirect(req: Request, res: Response): void {
+    const token = req.query.token as string | undefined
+    let state = ''
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET ?? '') as { id: string }
+        state = decoded.id
+      } catch { /* invalid token — treat as login flow */ }
+    }
     const params = new URLSearchParams({
       client_id: microsoftConfig.clientId,
       response_type: 'code',
       redirect_uri: microsoftConfig.redirectUri,
       scope: microsoftConfig.scopes.join(' '),
       response_mode: 'query',
+      state,
     })
     res.redirect(`${MS_AUTH_URL}?${params.toString()}`)
   },
@@ -145,13 +159,11 @@ export const authController = {
   async microsoftCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const code = req.query.code as string
-      const userId = (req.query.state as string | undefined) ?? req.user?.id
+      const userId = req.query.state as string | undefined
 
-      if (!code || !userId) {
-        throw createError('Parâmetros OAuth inválidos', 400)
-      }
+      if (!code) throw createError('Código OAuth inválido', 400)
 
-      const params = new URLSearchParams({
+      const tokenParams = new URLSearchParams({
         client_id: microsoftConfig.clientId,
         client_secret: microsoftConfig.clientSecret,
         code,
@@ -159,23 +171,61 @@ export const authController = {
         grant_type: 'authorization_code',
       })
 
-      const { data } = await axios.post(MS_TOKEN_URL, params.toString(), {
+      const { data } = await axios.post(MS_TOKEN_URL, tokenParams.toString(), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
 
       const expiresAt = new Date(Date.now() + data.expires_in * 1000)
 
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          microsoft_access_token: data.access_token,
-          microsoft_refresh_token: data.refresh_token,
-          microsoft_token_expires_at: expiresAt,
-        },
-      })
+      if (userId) {
+        // Connect flow: update existing user's Microsoft tokens
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            microsoft_access_token: data.access_token,
+            microsoft_refresh_token: data.refresh_token,
+            microsoft_token_expires_at: expiresAt,
+          },
+        })
+        console.log(JSON.stringify({ level: 'info', action: 'microsoft_connected', data: { userId } }))
+        res.redirect(`${process.env.FRONTEND_URL}/configuracoes/provedores?microsoft=conectado`)
+      } else {
+        // Login flow: fetch profile from Microsoft Graph
+        const graphRes = await axios.get<{ mail?: string; userPrincipalName?: string; displayName?: string }>(
+          'https://graph.microsoft.com/v1.0/me',
+          { headers: { Authorization: `Bearer ${data.access_token}` } }
+        )
+        const email = graphRes.data.mail ?? graphRes.data.userPrincipalName ?? ''
+        const name = graphRes.data.displayName ?? email
+        if (!email) throw createError('Não foi possível obter o e-mail da conta Microsoft', 400)
 
-      console.log(JSON.stringify({ level: 'info', action: 'microsoft_connected', data: { userId } }))
-      res.redirect(`${process.env.FRONTEND_URL}/configuracoes/provedores?microsoft=conectado`)
+        let user = await prisma.user.findUnique({ where: { email } })
+        if (!user) {
+          user = await prisma.user.create({
+            data: { name, email, password_hash: '', role: 'advogado',
+              microsoft_access_token: data.access_token,
+              microsoft_refresh_token: data.refresh_token,
+              microsoft_token_expires_at: expiresAt },
+          })
+        } else {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { microsoft_access_token: data.access_token,
+              microsoft_refresh_token: data.refresh_token,
+              microsoft_token_expires_at: expiresAt },
+          })
+        }
+
+        const tokens = signTokens({ id: user.id, email: user.email, role: user.role, name: user.name })
+        console.log(JSON.stringify({ level: 'info', action: 'microsoft_login', data: { userId: user.id } }))
+        const redirectParams = new URLSearchParams({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          role: user.role,
+          name: user.name,
+        })
+        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?${redirectParams.toString()}`)
+      }
     } catch (err) {
       next(err)
     }
@@ -202,11 +252,19 @@ export const authController = {
   // ── Google OAuth ───────────────────────────────────────────────────
 
   googleRedirect(req: Request, res: Response): void {
+    const token = req.query.token as string | undefined
+    let state = ''
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET ?? '') as { id: string }
+        state = decoded.id
+      } catch { /* invalid token — treat as login flow */ }
+    }
     const oauth2Client = createOAuth2Client()
     const url = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: googleScopes,
-      state: req.user?.id ?? '',
+      state,
       prompt: 'consent',
     })
     res.redirect(url)
@@ -215,33 +273,67 @@ export const authController = {
   async googleCallback(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const code = req.query.code as string
-      const userId = (req.query.state as string | undefined) ?? req.user?.id
+      const userId = req.query.state as string | undefined
 
-      if (!code || !userId) {
-        throw createError('Parâmetros OAuth inválidos', 400)
-      }
+      if (!code) throw createError('Código OAuth inválido', 400)
 
       const oauth2Client = createOAuth2Client()
       const { tokens } = await oauth2Client.getToken(code)
-
-      // Busca o e-mail da conta Google conectada
       oauth2Client.setCredentials(tokens)
+
       const { google } = await import('googleapis')
       const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
       const { data: profile } = await oauth2.userinfo.get()
 
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          google_access_token: tokens.access_token ?? null,
-          google_refresh_token: tokens.refresh_token ?? null,
-          google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-          google_email: profile.email ?? null,
-        },
-      })
+      if (userId) {
+        // Connect flow: update existing user's Google tokens
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            google_access_token: tokens.access_token ?? null,
+            google_refresh_token: tokens.refresh_token ?? null,
+            google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+            google_email: profile.email ?? null,
+          },
+        })
+        console.log(JSON.stringify({ level: 'info', action: 'google_connected', data: { userId } }))
+        res.redirect(`${process.env.FRONTEND_URL}/configuracoes/provedores?google=conectado`)
+      } else {
+        // Login flow: find or create user by Google email
+        const email = profile.email ?? ''
+        const name = profile.name ?? email
+        if (!email) throw createError('Não foi possível obter o e-mail da conta Google', 400)
 
-      console.log(JSON.stringify({ level: 'info', action: 'google_connected', data: { userId } }))
-      res.redirect(`${process.env.FRONTEND_URL}/configuracoes/provedores?google=conectado`)
+        let user = await prisma.user.findUnique({ where: { email } })
+        if (!user) {
+          user = await prisma.user.create({
+            data: { name, email, password_hash: '', role: 'advogado',
+              google_access_token: tokens.access_token ?? null,
+              google_refresh_token: tokens.refresh_token ?? null,
+              google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+              google_email: email },
+          })
+        } else {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              google_access_token: tokens.access_token ?? null,
+              google_refresh_token: tokens.refresh_token ?? null,
+              google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+              google_email: email },
+          })
+        }
+
+        const jwtTokens = signTokens({ id: user.id, email: user.email, role: user.role, name: user.name })
+        console.log(JSON.stringify({ level: 'info', action: 'google_login', data: { userId: user.id } }))
+        const redirectParams = new URLSearchParams({
+          access_token: jwtTokens.access_token,
+          refresh_token: jwtTokens.refresh_token,
+          role: user.role,
+          name: user.name,
+        })
+        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?${redirectParams.toString()}`)
+      }
     } catch (err) {
       next(err)
     }

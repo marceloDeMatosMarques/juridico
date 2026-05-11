@@ -32,7 +32,7 @@ export interface IStorageProvider {
   createFolderStructure(clientName: string, processRef: string): Promise<FolderStructure>
 
   uploadFile(buffer: Buffer, fileName: string, folderId: string, mimeType: string): Promise<StoredFile>
-  createUploadSession(fileName: string, folderId: string, fileSize: number): Promise<UploadSessionResult>
+  createUploadSession(fileName: string, folderId: string, fileSize: number, mimeType?: string): Promise<UploadSessionResult>
   finalizeUpload(uploadId: string, itemId: string): Promise<StoredFile>
 
   createPublicLink(itemId: string): Promise<string>

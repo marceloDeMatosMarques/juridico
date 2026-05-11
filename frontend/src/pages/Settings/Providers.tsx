@@ -329,6 +329,7 @@ function WhatsAppCard() {
 
 export default function Providers() {
   const setProviderStatus = useAuthStore((s) => s.setProviderStatus)
+  const accessToken = useAuthStore((s) => s.accessToken)
   const [status, setStatus] = useState<ProvidersStatus | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -417,7 +418,7 @@ export default function Providers() {
                 <>
                   <span className="badge bg-secondary-subtle text-secondary mb-3">○ Desconectado</span>
                   <div>
-                    <a href="/auth/microsoft" className="btn btn-sm btn-outline-primary">
+                    <a href={`/auth/microsoft?token=${accessToken ?? ''}`} className="btn btn-sm btn-outline-primary">
                       Conectar com Microsoft
                     </a>
                   </div>
@@ -470,7 +471,7 @@ export default function Providers() {
                 <>
                   <span className="badge bg-secondary-subtle text-secondary mb-3">○ Desconectado</span>
                   <div>
-                    <a href="/auth/google" className="btn btn-sm btn-outline-danger">
+                    <a href={`/auth/google?token=${accessToken ?? ''}`} className="btn btn-sm btn-outline-danger">
                       Conectar com Google
                     </a>
                   </div>

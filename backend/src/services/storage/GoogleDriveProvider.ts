@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { google } from 'googleapis'
 import { GoogleAPIService } from '../GoogleAPIService'
 import type { IStorageProvider, StorageFolder, FolderStructure, StoredFile, UploadSessionResult } from './IStorageProvider'
@@ -97,20 +98,32 @@ export class GoogleDriveProvider implements IStorageProvider {
     return { itemId: data.id!, publicLink, provider: 'googledrive', fileName, fileSize: buffer.length }
   }
 
-  async createUploadSession(fileName: string, folderId: string, _fileSize: number): Promise<UploadSessionResult> {
+  async createUploadSession(fileName: string, folderId: string, fileSize: number, mimeType = 'video/mp4'): Promise<UploadSessionResult> {
     const auth = await this.googleService.getClient()
-    const drive = this.driveClient(auth)
-    // Initiate resumable upload
-    const res = await drive.files.create(
+    const { token } = await auth.getAccessToken()
+    if (!token) throw new Error('Token do Google Drive inválido')
+
+    // Initiate resumable upload via REST (googleapis SDK doesn't expose Location header)
+    const response = await axios.post(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+      { name: fileName, parents: [folderId] },
       {
-        requestBody: { name: fileName, parents: [folderId] },
-        media: { mimeType: 'application/octet-stream' },
-        fields: 'id',
-      },
-      { responseType: 'json' }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Upload-Content-Type': mimeType,
+          'X-Upload-Content-Length': String(fileSize),
+        },
+      }
     )
-    const uploadId = res.data.id ?? ''
-    return { uploadUrl: '', uploadId, provider: 'googledrive' }
+
+    const uploadUrl = (response.headers['location'] as string) ?? ''
+    if (!uploadUrl) throw new Error('Falha ao iniciar sessão de upload no Google Drive')
+
+    const match = uploadUrl.match(/upload_id=([^&]+)/)
+    const uploadId = match ? decodeURIComponent(match[1]) : fileName
+
+    return { uploadUrl, uploadId, provider: 'googledrive' }
   }
 
   async finalizeUpload(_uploadId: string, itemId: string): Promise<StoredFile> {

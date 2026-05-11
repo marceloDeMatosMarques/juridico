@@ -1,7 +1,7 @@
 import { prisma } from '../config/database'
 import { OneDriveProvider } from './storage/OneDriveProvider'
 import { GoogleDriveProvider } from './storage/GoogleDriveProvider'
-import type { IStorageProvider, FolderStructure } from './storage/IStorageProvider'
+import type { IStorageProvider, FolderStructure, StoredFile } from './storage/IStorageProvider'
 
 export interface StorageFolderResult {
   onedrive?: { folderId: string; folderUrl: string; docsFolderId: string }
@@ -93,6 +93,44 @@ export class StorageService {
       { onedrive: process.onedrive_docs_folder_id, googledrive: process.google_drive_docs_folder_id },
       buffer, fileName, mimeType,
     )
+  }
+
+  async createVideoUploadSession(
+    process: { id: string; onedrive_folder_id: string | null; google_drive_folder_id: string | null },
+    fileName: string,
+    fileSize: number,
+    mimeType: string,
+    targetProvider: 'onedrive' | 'googledrive'
+  ): Promise<{ uploadUrl: string; uploadId: string; provider: string }> {
+    const provider: IStorageProvider = targetProvider === 'onedrive'
+      ? new OneDriveProvider(this.userId)
+      : new GoogleDriveProvider(this.userId)
+
+    const connected = await provider.checkConnection(this.userId)
+    if (!connected) {
+      const name = targetProvider === 'onedrive' ? 'OneDrive' : 'Google Drive'
+      throw new Error(`${name} não está conectado. Conecte sua conta nas Configurações.`)
+    }
+
+    const rootFolderId = targetProvider === 'onedrive' ? process.onedrive_folder_id : process.google_drive_folder_id
+    if (!rootFolderId) {
+      throw new Error('Pasta do processo não encontrada. Reconecte o provedor e edite o processo para criar as pastas.')
+    }
+
+    const videosFolder = await provider.createFolder('Videos', rootFolderId)
+    const session = await provider.createUploadSession(fileName, videosFolder.folderId, fileSize, mimeType)
+    return { uploadUrl: session.uploadUrl, uploadId: session.uploadId, provider: targetProvider }
+  }
+
+  async finalizeVideoUpload(
+    targetProvider: 'onedrive' | 'googledrive',
+    uploadId: string,
+    itemId: string
+  ): Promise<StoredFile> {
+    const provider: IStorageProvider = targetProvider === 'onedrive'
+      ? new OneDriveProvider(this.userId)
+      : new GoogleDriveProvider(this.userId)
+    return provider.finalizeUpload(uploadId, itemId)
   }
 
   async checkConnections(): Promise<{ onedrive: boolean; googledrive: boolean }> {

@@ -7,10 +7,12 @@ const router = Router({ mergeParams: true })
 
 router.use(auth, requireRole('advogado', 'assistente'))
 
-router.get( '/',           videosController.list)
-router.post('/',           videosController.create)
-router.delete('/:videoId', videosController.delete)
-router.post('/pdf',        videosController.generatePdf)
-router.get( '/pdf',        videosController.listPdfs)
+router.get( '/',                videosController.list)
+router.post('/',                videosController.create)
+router.delete('/:videoId',      videosController.delete)
+router.post('/pdf',             videosController.generatePdf)
+router.get( '/pdf',             videosController.listPdfs)
+router.post('/upload-session',  videosController.initUpload)
+router.post('/upload-complete', videosController.completeUpload)
 
 export default router

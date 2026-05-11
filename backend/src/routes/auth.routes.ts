@@ -11,12 +11,12 @@ router.post('/refresh', authController.refresh)
 router.post('/logout', authController.logout)
 
 // Microsoft OAuth
-router.get('/microsoft', auth, authController.microsoftRedirect)
+router.get('/microsoft', authController.microsoftRedirect)
 router.get('/microsoft/callback', authController.microsoftCallback)
 router.post('/microsoft/disconnect', auth, authController.microsoftDisconnect)
 
 // Google OAuth
-router.get('/google', auth, authController.googleRedirect)
+router.get('/google', authController.googleRedirect)
 router.get('/google/callback', authController.googleCallback)
 router.post('/google/disconnect', auth, authController.googleDisconnect)
 

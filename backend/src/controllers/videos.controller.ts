@@ -11,6 +11,23 @@ const videoSchema = z.object({
   description: z.string().optional().default(''),
 })
 
+const initUploadSchema = z.object({
+  fileName:       z.string().min(1),
+  fileSize:       z.number().positive(),
+  mimeType:       z.string().default('video/mp4'),
+  targetProvider: z.enum(['onedrive', 'googledrive']),
+})
+
+const completeUploadSchema = z.object({
+  itemId:         z.string().min(1),
+  uploadId:       z.string().min(1),
+  fileName:       z.string().min(1),
+  fileSize:       z.number().nonnegative(),
+  targetProvider: z.enum(['onedrive', 'googledrive']),
+  title:          z.string().min(1, 'Título obrigatório'),
+  description:    z.string().optional().default(''),
+})
+
 async function verifyProcessAccess(processId: string, userId: string, res: Response) {
   const proc = await prisma.process.findFirst({
     where: { id: processId, user_id: userId, deleted_at: null },
@@ -177,6 +194,77 @@ export const videosController = {
         id:          annex.id,
         downloadUrl: result.downloadUrl,
         pageCount:   undefined,
+      })
+    } catch (err) { next(err) }
+  },
+
+  async initUpload(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
+      const proc = await verifyProcessAccess(req.params.id, req.user.id, res)
+      if (!proc) return
+
+      const parsed = initUploadSchema.safeParse(req.body)
+      if (!parsed.success) { res.status(400).json({ erro: parsed.error.errors[0]?.message }); return }
+
+      const { fileName, fileSize, mimeType, targetProvider } = parsed.data
+      const storageService = new StorageService(req.user.id)
+      const session = await storageService.createVideoUploadSession(proc, fileName, fileSize, mimeType, targetProvider)
+      res.json(session)
+    } catch (err: unknown) {
+      if (err instanceof Error && (err.message.includes('não está conectado') || err.message.includes('não encontrada'))) {
+        res.status(400).json({ erro: err.message }); return
+      }
+      next(err)
+    }
+  },
+
+  async completeUpload(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
+      const proc = await verifyProcessAccess(req.params.id, req.user.id, res)
+      if (!proc) return
+
+      const parsed = completeUploadSchema.safeParse(req.body)
+      if (!parsed.success) { res.status(400).json({ erro: parsed.error.errors[0]?.message }); return }
+
+      const { itemId, uploadId, fileName, fileSize, targetProvider, title, description } = parsed.data
+      const storageService = new StorageService(req.user.id)
+      const file = await storageService.finalizeVideoUpload(targetProvider, uploadId, itemId)
+
+      const video = await prisma.processDocument.create({
+        data: {
+          process_id:    req.params.id,
+          document_type: 'video_link',
+          file_name:     title,
+          file_url:      file.publicLink,
+          notes:         description || null,
+          storage_type:  targetProvider === 'onedrive' ? 'onedrive' : 'external_link',
+          file_type:     'video',
+          file_size:     fileSize,
+          order_index:   0,
+          uploaded_by_role: req.user.role,
+          ...(targetProvider === 'onedrive'
+            ? { onedrive_item_id: itemId, onedrive_share_link: file.publicLink }
+            : { google_drive_item_id: itemId, google_drive_share_link: file.publicLink }),
+        },
+      })
+
+      await prisma.processTimeline.create({
+        data: {
+          process_id:  req.params.id,
+          user_id:     req.user.id,
+          action_type: 'documento_adicionado',
+          description: `Vídeo enviado para ${targetProvider === 'onedrive' ? 'OneDrive' : 'Google Drive'}: ${title} (${fileName})`,
+        },
+      })
+
+      res.status(201).json({
+        id:          video.id,
+        file_name:   video.file_name,
+        file_url:    video.file_url,
+        notes:       video.notes,
+        upload_date: video.upload_date,
       })
     } catch (err) { next(err) }
   },
