@@ -11,6 +11,7 @@ export function useAuth() {
     microsoftConnected: store.microsoftConnected,
     googleConnected: store.googleConnected,
     login: store.login,
+    register: store.register,
     logout: store.logout,
     refreshAccessToken: store.refreshAccessToken,
   }

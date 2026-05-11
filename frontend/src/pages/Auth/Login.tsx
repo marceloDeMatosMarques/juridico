@@ -3,26 +3,53 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, register } = useAuth()
   const navigate = useNavigate()
 
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
+
+  function switchMode(next: 'login' | 'register') {
+    setMode(next)
+    setErro('')
+    setName('')
+    setEmail('')
+    setPassword('')
+    setConfirmPassword('')
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setErro('')
+
+    if (mode === 'register') {
+      if (password !== confirmPassword) {
+        setErro('As senhas não coincidem.')
+        return
+      }
+      if (password.length < 8) {
+        setErro('A senha deve ter pelo menos 8 caracteres.')
+        return
+      }
+    }
+
     setCarregando(true)
     try {
-      await login(email, password)
+      if (mode === 'login') {
+        await login(email, password)
+      } else {
+        await register(name, email, password)
+      }
       navigate('/dashboard')
     } catch (err: unknown) {
       const msg =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao fazer login. Verifique suas credenciais.'
+        (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
+        ?? (err instanceof Error ? err.message : 'Ocorreu um erro. Tente novamente.')
       setErro(msg)
     } finally {
       setCarregando(false)
@@ -34,14 +61,55 @@ export default function Login() {
       <div className="container-fluid p-0">
         <div className="row g-0 px-3 py-3 vh-100 align-items-center justify-content-center">
           <div className="col-xl-4 col-lg-5 col-md-6">
+
             <div className="auth-title-section mb-3 text-start">
-              <h4 className="text-dark fw-medium mb-1">JurisControl</h4>
+              <h4 className="text-dark fw-medium mb-1">⚖️ JurisControl</h4>
               <p className="text-muted fs-14 mb-0">Sistema de Gestão Jurídica</p>
             </div>
 
             <div className="card mb-0 shadow-none border">
               <div className="card-body p-lg-4">
+
+                {/* Tabs Login / Cadastro */}
+                <ul className="nav nav-tabs nav-bordered mb-4">
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link${mode === 'login' ? ' active' : ''}`}
+                      onClick={() => switchMode('login')}
+                      type="button"
+                    >
+                      Entrar
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link${mode === 'register' ? ' active' : ''}`}
+                      onClick={() => switchMode('register')}
+                      type="button"
+                    >
+                      Criar conta
+                    </button>
+                  </li>
+                </ul>
+
                 <form onSubmit={handleSubmit}>
+
+                  {mode === 'register' && (
+                    <div className="form-group mb-3">
+                      <label htmlFor="name" className="form-label">Nome completo</label>
+                      <input
+                        className="form-control"
+                        type="text"
+                        id="name"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="Seu nome"
+                        required
+                        minLength={2}
+                      />
+                    </div>
+                  )}
+
                   <div className="form-group mb-3">
                     <label htmlFor="email" className="form-label">E-mail</label>
                     <input
@@ -49,7 +117,7 @@ export default function Login() {
                       type="email"
                       id="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={e => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       required
                     />
@@ -62,11 +130,27 @@ export default function Login() {
                       type="password"
                       id="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder={mode === 'register' ? 'Mínimo 8 caracteres' : '••••••••'}
                       required
+                      minLength={mode === 'register' ? 8 : undefined}
                     />
                   </div>
+
+                  {mode === 'register' && (
+                    <div className="form-group mb-3">
+                      <label htmlFor="confirmPassword" className="form-label">Confirmar senha</label>
+                      <input
+                        className="form-control"
+                        type="password"
+                        id="confirmPassword"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        placeholder="Repita a senha"
+                        required
+                      />
+                    </div>
+                  )}
 
                   {erro && (
                     <div className="alert alert-danger py-2 fs-14 mb-3" role="alert">
@@ -74,20 +158,18 @@ export default function Login() {
                     </div>
                   )}
 
-                  <div className="form-group mb-0">
-                    <div className="d-grid">
-                      <button
-                        className="btn btn-primary fw-semibold"
-                        type="submit"
-                        disabled={carregando}
-                      >
-                        {carregando ? 'Entrando...' : 'Entrar'}
-                      </button>
-                    </div>
+                  <div className="d-grid mb-0">
+                    <button className="btn btn-primary fw-semibold" type="submit" disabled={carregando}>
+                      {carregando
+                        ? (mode === 'login' ? 'Entrando...' : 'Criando conta...')
+                        : (mode === 'login' ? 'Entrar' : 'Criar conta')}
+                    </button>
                   </div>
                 </form>
 
-                <div className="saprator my-3"><span>Ou conecte-se com</span></div>
+                <div className="saprator my-3">
+                  <span>{mode === 'login' ? 'Ou entre com' : 'Ou cadastre-se com'}</span>
+                </div>
 
                 <div className="row g-2">
                   <div className="col-6">
@@ -114,8 +196,10 @@ export default function Login() {
                     </a>
                   </div>
                 </div>
+
               </div>
             </div>
+
           </div>
         </div>
       </div>

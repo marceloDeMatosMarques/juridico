@@ -11,6 +11,7 @@ interface AuthState {
   googleConnected: boolean
 
   login: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshAccessToken: () => Promise<void>
   setTokensFromOAuth: (accessToken: string, refreshToken: string, role: Role, name: string) => void
@@ -28,6 +29,17 @@ export const useAuthStore = create<AuthState>()(
 
       async login(email, password) {
         const { data } = await api.post('/auth/login', { email, password })
+        const decoded = parseJwt(data.access_token)
+        set({
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          user: { id: decoded.id, email: decoded.email, role: data.role, name: data.name },
+        })
+        localStorage.setItem('access_token', data.access_token)
+      },
+
+      async register(name, email, password) {
+        const { data } = await api.post('/auth/register', { name, email, password })
         const decoded = parseJwt(data.access_token)
         set({
           accessToken: data.access_token,

@@ -14,6 +14,12 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Senha obrigatória'),
 })
 
+const registerSchema = z.object({
+  name:     z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  email:    z.string().email('E-mail inválido'),
+  password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
+})
+
 const refreshSchema = z.object({
   refresh_token: z.string().min(1),
 })
@@ -31,6 +37,32 @@ function signTokens(payload: { id: string; email: string; role: string; name: st
 }
 
 export const authController = {
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = registerSchema.safeParse(req.body)
+      if (!parsed.success) {
+        res.status(400).json({ erro: parsed.error.errors[0]?.message }); return
+      }
+      const { name, email, password } = parsed.data
+
+      const existing = await prisma.user.findUnique({ where: { email } })
+      if (existing) {
+        res.status(409).json({ erro: 'E-mail já cadastrado.' }); return
+      }
+
+      const password_hash = await bcrypt.hash(password, 10)
+      const user = await prisma.user.create({
+        data: { name, email, password_hash, role: 'advogado' },
+      })
+
+      const tokens = signTokens({ id: user.id, email: user.email, role: user.role, name: user.name })
+      console.log(JSON.stringify({ level: 'info', action: 'register', data: { userId: user.id } }))
+      res.status(201).json({ ...tokens, role: user.role, name: user.name })
+    } catch (err) {
+      next(err)
+    }
+  },
+
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const parsed = loginSchema.safeParse(req.body)
