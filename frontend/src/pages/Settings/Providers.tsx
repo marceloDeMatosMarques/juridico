@@ -361,7 +361,9 @@ export default function Providers() {
   if (!status) return null
 
   return (
-    <div>
+    <div className="content-page">
+      <div className="content">
+        <div className="container-fluid">
       <h5 className="mb-3">Provedores de Serviço</h5>
 
       <div className="row g-3 mb-4">
@@ -478,6 +480,8 @@ export default function Providers() {
           </div>
         </div>
       </div>
+      </div>
     </div>
+  </div>
   )
 }
