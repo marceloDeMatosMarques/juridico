@@ -70,16 +70,24 @@ function monthLabel(yyyyMM: string) {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function StatCard({ icon, label, value, color, onClick }: {
-  icon: string; label: string; value: string | number; color: string; onClick?: () => void
+function StatCard({ icon, label, value, colorKey, onClick }: {
+  icon: string; label: string; value: string | number; colorKey: string; onClick?: () => void
 }) {
   return (
-    <div className={`card border-0 shadow-sm h-100 ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick} style={{ borderLeft: `4px solid ${color} !important` }}>
-      <div className="card-body d-flex align-items-center gap-3">
-        <div className="fs-28 flex-shrink-0">{icon}</div>
-        <div>
-          <div className="text-muted fs-12 mb-0">{label}</div>
-          <div className="fs-22 fw-bold" style={{ color }}>{value}</div>
+    <div
+      className="card overflow-hidden h-100"
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : undefined }}
+    >
+      <div className="card-body">
+        <div className="d-flex align-items-center gap-3">
+          <div className={`p-2 bg-${colorKey}-subtle rounded-2 border-top border-${colorKey} shadow-sm flex-shrink-0`}>
+            <iconify-icon icon={icon} className={`align-middle fs-26 text-${colorKey}`} />
+          </div>
+          <div className="d-flex flex-column">
+            <div className="fs-14 fw-normal text-dark mb-1">{label}</div>
+            <div className={`fs-18 fw-medium text-${colorKey} mb-0`}>{value}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -282,24 +290,24 @@ export default function Dashboard() {
 
           {/* Stat cards */}
           <div className="row g-3 mb-4">
-            <div className="col-6 col-xl">
-              <StatCard icon="📁" label="Total Processos" value={data.cards.total_processes} color="#6c757d" onClick={() => navigate('/processes')} />
+            <div className="col-md-6 col-xxl">
+              <StatCard icon="solar:document-text-broken" label="Total Processos" value={data.cards.total_processes} colorKey="secondary" onClick={() => navigate('/processes')} />
             </div>
-            <div className="col-6 col-xl">
-              <StatCard icon="⚡" label="Processos Ativos" value={data.cards.active_processes} color="#0d6efd" onClick={() => navigate('/processes')} />
+            <div className="col-md-6 col-xxl">
+              <StatCard icon="solar:bolt-circle-broken" label="Processos Ativos" value={data.cards.active_processes} colorKey="primary" onClick={() => navigate('/processes')} />
             </div>
-            <div className="col-6 col-xl">
-              <StatCard icon="📅" label="Audiências (7 dias)" value={data.cards.hearings_this_week} color="#0dcaf0" />
+            <div className="col-md-6 col-xxl">
+              <StatCard icon="solar:calendar-mark-broken" label="Audiências (7 dias)" value={data.cards.hearings_this_week} colorKey="info" />
             </div>
-            <div className="col-6 col-xl">
-              <StatCard icon="💰" label="A Receber" value={brl(data.cards.honorarios_pendentes)} color="#ffc107" onClick={() => navigate('/financeiro')} />
+            <div className="col-md-6 col-xxl">
+              <StatCard icon="solar:dollar-circle-broken" label="A Receber" value={brl(data.cards.honorarios_pendentes)} colorKey="warning" onClick={() => navigate('/financeiro')} />
             </div>
-            <div className="col-6 col-xl">
-              <StatCard icon="🔔" label="Notif. Urgentes" value={data.cards.urgent_notifications} color="#dc3545" />
+            <div className="col-md-6 col-xxl">
+              <StatCard icon="solar:bell-bing-broken" label="Notif. Urgentes" value={data.cards.urgent_notifications} colorKey="danger" />
             </div>
             {pendingRequests > 0 && (
-              <div className="col-6 col-xl">
-                <StatCard icon="📋" label="Novos Casos" value={pendingRequests} color="#6366f1" onClick={() => navigate('/solicitacoes')} />
+              <div className="col-md-6 col-xxl">
+                <StatCard icon="solar:inbox-in-broken" label="Novos Casos" value={pendingRequests} colorKey="success" onClick={() => navigate('/solicitacoes')} />
               </div>
             )}
           </div>
