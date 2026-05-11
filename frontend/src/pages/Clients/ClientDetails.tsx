@@ -121,7 +121,7 @@ export default function ClientDetails() {
                         className={`btn btn-sm ${showChat ? 'btn-success' : 'btn-outline-success'}`}
                         onClick={() => setShowChat(p => !p)}
                       >
-                        <i className="ri-whatsapp-line me-1" />WhatsApp
+                        <iconify-icon icon="solar:chat-round-like-linear" className="me-1" />WhatsApp
                       </button>
                     )}
                     {!cliente.portal_enabled ? (
@@ -182,11 +182,11 @@ export default function ClientDetails() {
                               <td>
                                 <div className="d-flex gap-1">
                                   <button className="btn btn-xs btn-outline-secondary" title="Ver processo" onClick={() => navigate(`/processes/${p.id}`)}>
-                                    <i className="ri-eye-line" />
+                                    <iconify-icon icon="solar:eye-linear" />
                                   </button>
                                   {!p.process_number && (
                                     <button className="btn btn-xs btn-outline-primary" title="Intake interno" onClick={() => navigate(`/clients/${cliente.id}/intake?process=${p.id}`)}>
-                                      <i className="ri-folder-open-line" />
+                                      <iconify-icon icon="solar:folder-open-linear" />
                                     </button>
                                   )}
                                 </div>

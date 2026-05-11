@@ -52,7 +52,7 @@ export default function WhatsAppChat({ clientId, onClose }: { clientId: string; 
     <div className="card mt-3 border-success">
       <div className="card-header py-2 d-flex align-items-center justify-content-between bg-success-subtle">
         <span className="fw-semibold fs-13">
-          <i className="ri-whatsapp-line me-1 text-success" />WhatsApp
+          <iconify-icon icon="solar:chat-round-like-linear" className="me-1 text-success" />WhatsApp
         </span>
         <button className="btn-close btn-close-sm" onClick={onClose} />
       </div>
@@ -98,7 +98,7 @@ export default function WhatsAppChat({ clientId, onClose }: { clientId: string; 
             disabled={sending}
           />
           <button className="btn btn-sm btn-success" type="submit" disabled={sending || !text.trim()}>
-            {sending ? <span className="spinner-border spinner-border-sm" /> : <i className="ri-send-plane-fill" />}
+            {sending ? <span className="spinner-border spinner-border-sm" /> : <iconify-icon icon="solar:send-twice-bold" />}
           </button>
         </form>
       </div>

@@ -152,10 +152,10 @@ export default function ProcessList() {
                           <td>
                             <div className="d-flex gap-1">
                               <button className="btn btn-xs btn-outline-secondary" onClick={() => navigate(`/processes/${p.id}`)} title="Ver processo">
-                                <i className="ri-eye-line" />
+                                <iconify-icon icon="solar:eye-linear" />
                               </button>
                               <button className="btn btn-xs btn-outline-primary" onClick={() => navigate(`/processes/${p.id}/edit`)} title="Editar">
-                                <i className="ri-pencil-line" />
+                                <iconify-icon icon="solar:pen-linear" />
                               </button>
                             </div>
                           </td>

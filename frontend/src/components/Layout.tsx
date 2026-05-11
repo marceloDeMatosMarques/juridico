@@ -9,12 +9,12 @@ type NavItem = {
 }
 
 const NAV: NavItem[] = [
-  { to: '/dashboard',              icon: 'ri-dashboard-line',     label: 'Dashboard' },
-  { to: '/clients',                icon: 'ri-user-3-line',        label: 'Clientes' },
-  { to: '/processes',              icon: 'ri-file-text-line',     label: 'Processos' },
-  { to: '/financeiro',             icon: 'ri-money-dollar-circle-line', label: 'Financeiro' },
-  { to: '/solicitacoes',           icon: 'ri-mail-add-line',      label: 'Solicitações' },
-  { to: '/configuracoes/provedores', icon: 'ri-settings-3-line', label: 'Configurações' },
+  { to: '/dashboard',              icon: 'solar:home-2-linear',                  label: 'Dashboard' },
+  { to: '/clients',                icon: 'solar:users-group-rounded-linear',     label: 'Clientes' },
+  { to: '/processes',              icon: 'solar:document-text-linear',           label: 'Processos' },
+  { to: '/financeiro',             icon: 'solar:dollar-circle-linear',           label: 'Financeiro' },
+  { to: '/solicitacoes',           icon: 'solar:inbox-in-linear',                label: 'Solicitações' },
+  { to: '/configuracoes/provedores', icon: 'solar:settings-linear',             label: 'Configurações' },
 ]
 
 export default function Layout() {
@@ -47,7 +47,7 @@ export default function Layout() {
                   className="button-toggle-menu nav-link"
                   onClick={() => setSidebarOpen(o => !o)}
                 >
-                  <i className="ri-menu-line fs-22 align-middle text-dark" />
+                  <iconify-icon icon="solar:hamburger-menu-linear" style={{ fontSize: 22 }} />
                 </button>
               </li>
             </ul>
@@ -75,7 +75,7 @@ export default function Layout() {
                   </div>
                   <div className="dropdown-divider" />
                   <button className="dropdown-item text-danger" onClick={handleLogout}>
-                    <i className="ri-logout-box-r-line me-1" />
+                    <iconify-icon icon="solar:logout-2-linear" className="me-1" />
                     Sair
                   </button>
                 </div>
@@ -110,7 +110,7 @@ export default function Layout() {
                     className={({ isActive }) => `tp-link${isActive ? ' active' : ''}`}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <span className="nav-icon"><i className={item.icon} /></span>
+                    <span className="nav-icon"><iconify-icon icon={item.icon} /></span>
                     <span className="sidebar-text">{item.label}</span>
                   </NavLink>
                 </li>

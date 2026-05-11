@@ -17,7 +17,8 @@
       "PowerShell(Get-ChildItem *)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\frontend\\\\src\" -Recurse -File | Where-Object { $_.Extension -in \".ts\", \".tsx\" } | Select-Object -ExpandProperty Name | Sort-Object | Select-Object -First 50)",
       "Bash(Get-Content -Path \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\JURISCONTROL_MASTER_PROMPT_FINAL.md\")",
-      "Bash(Select-String -Pattern \"FASE\\\\s+11|fase\\\\s+11|IA com Gemini\" -Context 5)"
+      "Bash(Select-String -Pattern \"FASE\\\\s+11|fase\\\\s+11|IA com Gemini\" -Context 5)",
+      "Bash(dir \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\frontend\" /b)"
     ]
   }
 }

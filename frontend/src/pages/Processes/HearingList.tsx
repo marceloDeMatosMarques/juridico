@@ -257,8 +257,8 @@ function HearingRow({
         </span>
         {h.outlook_event_id && <span className="badge bg-info-subtle text-info fs-10" title="Sincronizado Outlook">OL</span>}
         {h.google_event_id  && <span className="badge bg-danger-subtle text-danger fs-10" title="Sincronizado Google">GC</span>}
-        <button className="btn btn-xs btn-outline-secondary" onClick={() => onEdit(h)} title="Editar"><i className="ri-pencil-line" /></button>
-        <button className="btn btn-xs btn-outline-danger"    onClick={() => onDelete(h.id)} title="Remover"><i className="ri-delete-bin-line" /></button>
+        <button className="btn btn-xs btn-outline-secondary" onClick={() => onEdit(h)} title="Editar"><iconify-icon icon="solar:pen-linear" /></button>
+        <button className="btn btn-xs btn-outline-danger"    onClick={() => onDelete(h.id)} title="Remover"><iconify-icon icon="solar:trash-bin-2-linear" /></button>
       </div>
     </div>
   )

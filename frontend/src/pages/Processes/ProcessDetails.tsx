@@ -60,12 +60,12 @@ const TYPE_LABEL: Record<string, string> = {
 }
 
 const TIMELINE_ICON: Record<string, string> = {
-  processo_criado: 'ri-add-circle-line text-primary',
-  processo_atualizado: 'ri-edit-line text-info',
-  pasta_storage_criada: 'ri-folder-add-line text-success',
-  documento_adicionado: 'ri-file-add-line text-secondary',
-  processo_pdf_gerado: 'ri-file-pdf-line text-danger',
-  processo_pdf_gerado_processo: 'ri-file-pdf-line text-danger',
+  processo_criado: 'mdi mdi-plus-circle-outline text-primary',
+  processo_atualizado: 'mdi mdi-pencil-outline text-info',
+  pasta_storage_criada: 'mdi mdi-folder-plus-outline text-success',
+  documento_adicionado: 'mdi mdi-file-plus-outline text-secondary',
+  processo_pdf_gerado: 'mdi mdi-file-pdf-box text-danger',
+  processo_pdf_gerado_processo: 'mdi mdi-file-pdf-box text-danger',
 }
 
 export default function ProcessDetails() {
@@ -151,7 +151,7 @@ export default function ProcessDetails() {
                         <strong>Nº:</strong>
                         <span className="font-monospace fs-13">{processo.process_number}</span>
                         <button className="btn btn-xs btn-outline-secondary" onClick={copyProcessNumber} title="Copiar">
-                          <i className="ri-clipboard-line" />
+                          <iconify-icon icon="solar:clipboard-text-linear" />
                         </button>
                         {courtLink && (
                           <a href={courtLink} target="_blank" rel="noreferrer" className="btn btn-xs btn-outline-info" title="Abrir no tribunal">
@@ -271,7 +271,7 @@ export default function ProcessDetails() {
                       {processo.timeline.map(entry => (
                         <div key={entry.id} className="d-flex gap-3 mb-3">
                           <div className="flex-shrink-0">
-                            <i className={`${TIMELINE_ICON[entry.action_type] ?? 'ri-circle-line text-muted'} fs-18`} />
+                            <i className={`${TIMELINE_ICON[entry.action_type] ?? 'mdi mdi-circle-outline text-muted'} fs-18`} />
                           </div>
                           <div className="flex-grow-1">
                             <div className="fs-13">{entry.description}</div>

@@ -117,13 +117,13 @@ export default function ClientList() {
                               <td>
                                 <div className="d-flex gap-1">
                                   <button className="btn btn-sm btn-outline-secondary" title="Ver ficha" onClick={() => navigate(`/clients/${c.id}`)}>
-                                    <i className="ri-eye-line" />
+                                    <iconify-icon icon="solar:eye-linear" />
                                   </button>
                                   <button className="btn btn-sm btn-outline-secondary" title="Editar" onClick={() => navigate(`/clients/${c.id}/edit`)}>
-                                    <i className="ri-pencil-line" />
+                                    <iconify-icon icon="solar:pen-linear" />
                                   </button>
                                   <button className="btn btn-sm btn-outline-primary" title="Gerar link intake" onClick={() => gerarLinkIntake(c.id)}>
-                                    <i className="ri-link" />
+                                    <iconify-icon icon="solar:link-circle-linear" />
                                   </button>
                                 </div>
                               </td>

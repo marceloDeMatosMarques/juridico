@@ -59,7 +59,7 @@ function CourtMonitoringCard() {
       <div className="card-body">
         <div className="d-flex align-items-center justify-content-between mb-3">
           <div className="d-flex align-items-center">
-            <i className="ri-notification-3-line me-2 text-primary fs-22" />
+            <iconify-icon icon="solar:bell-bing-linear" className="me-2 text-primary" style={{ fontSize: 22 }} />
             <h6 className="mb-0 fw-semibold">Monitoramento de Tribunal</h6>
           </div>
           <div className="form-check form-switch mb-0">
@@ -97,7 +97,7 @@ function CourtMonitoringCard() {
                   {d.active ? '⏸' : '▶'}
                 </button>
                 <button className="btn btn-xs btn-outline-danger" onClick={() => void handleDelete(d.id)} title="Remover">
-                  <i className="ri-delete-bin-line" />
+                  <iconify-icon icon="solar:trash-bin-2-linear" />
                 </button>
               </div>
             ))}
@@ -247,7 +247,7 @@ function WhatsAppCard() {
     <div className="card border h-100">
       <div className="card-body">
         <div className="d-flex align-items-center mb-2">
-          <i className="ri-whatsapp-line me-2 text-success fs-22" />
+          <iconify-icon icon="solar:chat-round-like-linear" className="me-2 text-success" style={{ fontSize: 22 }} />
           <h6 className="mb-0 fw-semibold">WhatsApp (Evolution API)</h6>
         </div>
 

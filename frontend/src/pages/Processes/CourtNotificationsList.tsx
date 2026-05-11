@@ -143,7 +143,7 @@ function NotificationRow({
           <button className="btn btn-xs btn-outline-secondary" onClick={() => onRead(n.id)} title="Marcar como lida">✓</button>
         )}
         <button className="btn btn-xs btn-outline-danger" onClick={() => onDelete(n.id)} title="Remover">
-          <i className="ri-delete-bin-line" />
+          <iconify-icon icon="solar:trash-bin-2-linear" />
         </button>
       </div>
     </div>

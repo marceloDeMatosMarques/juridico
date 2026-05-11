@@ -268,7 +268,7 @@ export default function FinancialList({ processId }: { processId: string }) {
                   </button>
                 )}
                 <button className="btn btn-xs btn-outline-danger" onClick={() => void handleDelete(r.id)} title="Remover">
-                  <i className="ri-delete-bin-line" />
+                  <iconify-icon icon="solar:trash-bin-2-linear" />
                 </button>
               </div>
             </div>
