@@ -10,5 +10,5 @@ export function createOAuth2Client() {
 
 export const googleScopes = (
   process.env.GOOGLE_SCOPES ??
-  'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar offline_access'
+  'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
 ).split(' ')

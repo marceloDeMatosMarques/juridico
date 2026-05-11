@@ -20,7 +20,10 @@
       "Bash(Select-String -Pattern \"FASE\\\\s+11|fase\\\\s+11|IA com Gemini\" -Context 5)",
       "Bash(dir \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\frontend\" /b)",
       "Bash(Select-Object FullName)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(findstr /i \"\\\\\"dev\\\\\"\\\\|\\\\\"build\\\\\"\\\\|\\\\\"start\\\\\"\\\\|\\\\\"preview\\\\\"\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\marcelo_crcrj\\\\Documents\\\\m3br-juridico\\\\frontend\\\\package.json\")",
+      "Bash(Select-String \"dev|build|start\")"
     ]
   }
 }
