@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { prisma } from '../config/database'
 import { pdfService } from '../services/PDFService'
 import { StorageService } from '../services/StorageService'
+import { GoogleDriveProvider } from '../services/storage/GoogleDriveProvider'
 
 const videoSchema = z.object({
   title:       z.string().min(1, 'Título obrigatório'),
@@ -310,6 +311,82 @@ export const videosController = {
         upload_date: video.upload_date,
       })
     } catch (err) { next(err) }
+  },
+
+  async uploadGoogleDrive(req: Request, res: Response, next: NextFunction): Promise<void> {
+    const tempPath = (req.file as Express.Multer.File | undefined)?.path
+    try {
+      if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
+      if (!req.file) { res.status(400).json({ erro: 'Arquivo não enviado' }); return }
+
+      const proc = await verifyProcessAccess(req.params.id, req.user.id, res)
+      if (!proc) return
+
+      const title = (req.body as { title?: string }).title || req.file.originalname.replace(/\.[^.]+$/, '')
+      const description = (req.body as { description?: string }).description || ''
+      const storageService = new StorageService(req.user.id)
+
+      // Lazy-create folder structure if needed
+      if (!proc.google_drive_folder_id) {
+        const connected = await storageService.checkConnections()
+        if (!connected.googledrive) {
+          res.status(400).json({ erro: 'Google Drive não está conectado. Acesse Configurações → Provedores.' }); return
+        }
+        const client = await prisma.client.findUnique({ where: { id: proc.client_id } })
+        const processRef = proc.process_number || proc.case_title
+        const folders = await storageService.createFolderStructure(client?.full_name ?? '', processRef)
+        if (folders.googledrive) {
+          const updated = await prisma.process.update({
+            where: { id: proc.id },
+            data: {
+              google_drive_folder_id:      folders.googledrive.folderId,
+              google_drive_folder_url:     folders.googledrive.folderUrl,
+              google_drive_docs_folder_id: folders.googledrive.docsFolderId,
+            },
+          })
+          Object.assign(proc, updated)
+        }
+        if (!proc.google_drive_folder_id) {
+          res.status(500).json({ erro: 'Não foi possível criar a pasta no Google Drive. Tente novamente.' }); return
+        }
+      }
+
+      const provider = new GoogleDriveProvider(req.user.id)
+      const videosFolder = await provider.createFolder('Videos', proc.google_drive_folder_id!)
+      const fileStream = fs.createReadStream(req.file.path)
+      const uploaded = await provider.uploadStream(fileStream, req.file.originalname, videosFolder.folderId, req.file.mimetype || 'video/mp4', req.file.size)
+
+      const video = await prisma.processDocument.create({
+        data: {
+          process_id:              req.params.id,
+          document_type:           'video_link',
+          file_name:               title,
+          file_url:                uploaded.publicLink,
+          notes:                   description || null,
+          storage_type:            'external_link',
+          file_type:               'video',
+          file_size:               req.file.size,
+          order_index:             0,
+          uploaded_by_role:        req.user.role,
+          google_drive_item_id:    uploaded.itemId,
+          google_drive_share_link: uploaded.publicLink,
+        },
+      })
+
+      await prisma.processTimeline.create({
+        data: {
+          process_id:  req.params.id,
+          user_id:     req.user.id,
+          action_type: 'documento_adicionado',
+          description: `Vídeo enviado para Google Drive: ${title} (${req.file.originalname})`,
+        },
+      })
+
+      res.status(201).json({ id: video.id, file_name: video.file_name, file_url: video.file_url, notes: video.notes, upload_date: video.upload_date })
+    } catch (err) { next(err) }
+    finally {
+      if (tempPath) fs.unlink(tempPath, () => null)
+    }
   },
 
   async listPdfs(req: Request, res: Response, next: NextFunction): Promise<void> {

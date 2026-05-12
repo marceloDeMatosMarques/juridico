@@ -160,7 +160,7 @@ export default function ProcessForm() {
 
           <form onSubmit={handleSubmit}>
             <div className="row">
-              <div className="col-lg-8">
+              <div className="col">
                 <div className="card mb-3">
                   <div className="card-body">
                     <h5 className="card-title mb-3">Dados do Processo</h5>

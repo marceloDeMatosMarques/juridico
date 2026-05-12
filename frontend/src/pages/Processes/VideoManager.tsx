@@ -155,27 +155,33 @@ export default function VideoManager() {
     setUploadProgress(0)
     setUploading(true)
     try {
-      const { data: session } = await api.post<{ uploadUrl: string; uploadId: string }>(
-        `/api/processes/${id}/videos/upload-session`,
-        {
-          fileName: uploadFile.name,
-          fileSize: uploadFile.size,
-          mimeType: uploadFile.type || 'video/mp4',
-          targetProvider: uploadProvider,
-        }
-      )
+      let video: VideoLink
 
-      const itemId = await uploadFileToCloud(session.uploadUrl, uploadProvider, uploadFile, setUploadProgress)
-
-      const { data: video } = await api.post<VideoLink>(`/api/processes/${id}/videos/upload-complete`, {
-        itemId,
-        uploadId: session.uploadId,
-        fileName: uploadFile.name,
-        fileSize: uploadFile.size,
-        targetProvider: uploadProvider,
-        title: uploadTitle || uploadFile.name.replace(/\.[^.]+$/, ''),
-        description: uploadDescription,
-      })
+      if (uploadProvider === 'googledrive') {
+        // Google Drive: upload via backend (evita CORS no XHR direto)
+        const formData = new FormData()
+        formData.append('file', uploadFile)
+        formData.append('title', uploadTitle || uploadFile.name.replace(/\.[^.]+$/, ''))
+        formData.append('description', uploadDescription)
+        const { data } = await api.post<VideoLink>(
+          `/api/processes/${id}/videos/upload-googledrive`,
+          formData,
+          { onUploadProgress: (e) => { if (e.total) setUploadProgress(Math.round((e.loaded / e.total) * 100)) } }
+        )
+        video = data
+      } else {
+        // OneDrive: upload direto do browser via sessão resumable (suporta CORS)
+        const { data: session } = await api.post<{ uploadUrl: string; uploadId: string }>(
+          `/api/processes/${id}/videos/upload-session`,
+          { fileName: uploadFile.name, fileSize: uploadFile.size, mimeType: uploadFile.type || 'video/mp4', targetProvider: uploadProvider }
+        )
+        const itemId = await uploadFileToCloud(session.uploadUrl, uploadProvider, uploadFile, setUploadProgress)
+        const { data } = await api.post<VideoLink>(`/api/processes/${id}/videos/upload-complete`, {
+          itemId, uploadId: session.uploadId, fileName: uploadFile.name, fileSize: uploadFile.size,
+          targetProvider: uploadProvider, title: uploadTitle || uploadFile.name.replace(/\.[^.]+$/, ''), description: uploadDescription,
+        })
+        video = data
+      }
 
       setVideos(prev => [...prev, video])
       setUploadFile(null)

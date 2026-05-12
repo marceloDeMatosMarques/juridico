@@ -4,6 +4,7 @@ import { GoogleAPIService } from '../GoogleAPIService'
 import type { IStorageProvider, StorageFolder, FolderStructure, StoredFile, UploadSessionResult } from './IStorageProvider'
 import { prisma } from '../../config/database'
 import type { OAuth2Client } from 'google-auth-library'
+import type { Readable } from 'stream'
 
 function sanitize(name: string): string {
   return name.replace(/[/\\]/g, '_').trim().slice(0, 60) || 'sem-nome'
@@ -84,6 +85,18 @@ export class GoogleDriveProvider implements IStorageProvider {
       videos: videosFolder,
       pdfs: pdfsFolder,
     }
+  }
+
+  async uploadStream(stream: Readable, fileName: string, folderId: string, mimeType: string, fileSize: number): Promise<StoredFile> {
+    const auth = await this.googleService.getClient()
+    const drive = this.driveClient(auth)
+    const { data } = await drive.files.create({
+      requestBody: { name: fileName, parents: [folderId] },
+      media: { mimeType, body: stream },
+      fields: 'id, webViewLink, size',
+    })
+    const publicLink = await this.createPublicLink(data.id!)
+    return { itemId: data.id!, publicLink, provider: 'googledrive', fileName, fileSize }
   }
 
   async uploadFile(buffer: Buffer, fileName: string, folderId: string, mimeType: string): Promise<StoredFile> {
