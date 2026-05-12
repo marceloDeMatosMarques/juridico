@@ -240,7 +240,14 @@ export const videosController = {
             Object.assign(proc, refreshed)
           }
         } catch {
-          res.status(500).json({ erro: 'Não foi possível criar as pastas no provedor de armazenamento. Tente novamente.' })
+          // folder creation failed — will surface as a clear 400 below
+        }
+
+        // After lazy-init attempt, check if folder was actually created
+        const folderStillMissing = targetProvider === 'onedrive' ? !proc.onedrive_folder_id : !proc.google_drive_folder_id
+        if (folderStillMissing) {
+          const name = targetProvider === 'onedrive' ? 'OneDrive' : 'Google Drive'
+          res.status(400).json({ erro: `Não foi possível criar a pasta no ${name}. Verifique se a conta está conectada em Configurações → Provedores e tente novamente.` })
           return
         }
       }
@@ -248,7 +255,7 @@ export const videosController = {
       const session = await storageService.createVideoUploadSession(proc, fileName, fileSize, mimeType, targetProvider)
       res.json(session)
     } catch (err: unknown) {
-      if (err instanceof Error && err.message.includes('não está conectado')) {
+      if (err instanceof Error && (err.message.includes('não está conectado') || err.message.includes('não encontrada'))) {
         res.status(400).json({ erro: err.message }); return
       }
       next(err)
