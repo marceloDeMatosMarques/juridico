@@ -4,7 +4,7 @@ import { GoogleAPIService } from '../GoogleAPIService'
 import type { IStorageProvider, StorageFolder, FolderStructure, StoredFile, UploadSessionResult } from './IStorageProvider'
 import { prisma } from '../../config/database'
 import type { OAuth2Client } from 'google-auth-library'
-import type { Readable } from 'stream'
+
 
 function sanitize(name: string): string {
   return name.replace(/[/\\]/g, '_').trim().slice(0, 60) || 'sem-nome'
