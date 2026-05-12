@@ -61,9 +61,8 @@ export default function ProcessForm() {
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    // Load clients for select
-    api.get<{ clients: Client[] }>('/api/clients?limit=200')
-      .then(({ data }) => setClients(data.clients ?? []))
+    api.get<{ data: Client[] }>('/api/clients?limit=100')
+      .then(({ data }) => setClients(data.data ?? []))
       .catch(() => null)
   }, [])
 
