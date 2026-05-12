@@ -166,6 +166,7 @@ export const authController = {
       redirect_uri: microsoftConfig.redirectUri,
       scope: microsoftConfig.scopes.join(' '),
       response_mode: 'query',
+      prompt: 'select_account',
       state,
     })
     res.redirect(`${MS_AUTH_URL}?${params.toString()}`)

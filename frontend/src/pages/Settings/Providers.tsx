@@ -477,7 +477,7 @@ export default function Providers() {
                   <span className="badge bg-secondary-subtle text-secondary mb-3">○ Desconectado</span>
                   <div>
                     <button
-                      className="btn btn-sm btn-outline-danger"
+                      className="btn btn-sm btn-outline-success"
                       onClick={() => { window.location.href = `/auth/google?token=${localStorage.getItem('access_token') ?? ''}` }}
                     >
                       Conectar com Google
