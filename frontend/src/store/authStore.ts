@@ -21,7 +21,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      accessToken: null,
+      accessToken: localStorage.getItem('access_token'),
       refreshToken: null,
       user: null,
       microsoftConnected: false,
