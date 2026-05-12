@@ -211,7 +211,15 @@ export const videosController = {
       const storageService = new StorageService(req.user.id)
 
       // Lazy-create cloud folders if process was created without storage connected
-      if (!proc.onedrive_folder_id && !proc.google_drive_folder_id) {
+      const needsFolders = targetProvider === 'onedrive' ? !proc.onedrive_folder_id : !proc.google_drive_folder_id
+      if (needsFolders) {
+        const connected = await storageService.checkConnections()
+        const providerConnected = targetProvider === 'onedrive' ? connected.onedrive : connected.googledrive
+        if (!providerConnected) {
+          const name = targetProvider === 'onedrive' ? 'OneDrive' : 'Google Drive'
+          res.status(400).json({ erro: `${name} não está conectado. Acesse Configurações → Provedores e conecte sua conta.` })
+          return
+        }
         try {
           const client = await prisma.client.findUnique({ where: { id: proc.client_id } })
           const processRef = proc.process_number || proc.case_title
@@ -231,13 +239,16 @@ export const videosController = {
             const refreshed = await prisma.process.update({ where: { id: proc.id }, data: u })
             Object.assign(proc, refreshed)
           }
-        } catch { /* createVideoUploadSession will throw its own error if still missing */ }
+        } catch {
+          res.status(500).json({ erro: 'Não foi possível criar as pastas no provedor de armazenamento. Tente novamente.' })
+          return
+        }
       }
 
       const session = await storageService.createVideoUploadSession(proc, fileName, fileSize, mimeType, targetProvider)
       res.json(session)
     } catch (err: unknown) {
-      if (err instanceof Error && (err.message.includes('não está conectado') || err.message.includes('não encontrada'))) {
+      if (err instanceof Error && err.message.includes('não está conectado')) {
         res.status(400).json({ erro: err.message }); return
       }
       next(err)
