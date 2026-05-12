@@ -398,20 +398,9 @@ export default function Providers() {
                   {status.microsoft.email && (
                     <p className="text-muted fs-13 mb-2">{status.microsoft.email}</p>
                   )}
-                  <div className="mb-3">
-                    <label className="form-label fs-13">Preferência de armazenamento</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={status.storage_provider}
-                      onChange={(e) => atualizarPreferencia('storage_provider', e.target.value)}
-                    >
-                      <option value="onedrive">Usar apenas OneDrive</option>
-                      <option value="ambos">Usar ambos (OneDrive + Google Drive)</option>
-                    </select>
-                  </div>
                   <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => desconectar('microsoft')}
+                    className="btn btn-sm btn-outline-danger mt-2"
+                    onClick={() => void desconectar('microsoft')}
                   >
                     Desconectar
                   </button>
@@ -453,21 +442,9 @@ export default function Providers() {
                   {status.google.email && (
                     <p className="text-muted fs-13 mb-2">{status.google.email}</p>
                   )}
-                  <div className="mb-3">
-                    <label className="form-label fs-13">Preferência de calendário</label>
-                    <select
-                      className="form-select form-select-sm"
-                      value={status.calendar_provider}
-                      onChange={(e) => atualizarPreferencia('calendar_provider', e.target.value)}
-                    >
-                      <option value="google">Usar apenas Google Calendar</option>
-                      <option value="outlook">Usar apenas Outlook</option>
-                      <option value="ambos">Usar ambos</option>
-                    </select>
-                  </div>
                   <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => desconectar('google')}
+                    className="btn btn-sm btn-outline-danger mt-2"
+                    onClick={() => void desconectar('google')}
                   >
                     Desconectar
                   </button>
@@ -488,6 +465,59 @@ export default function Providers() {
             </div>
           </div>
         </div>
+
+        {/* Preferências de uso — seção separada, visível quando ao menos um provider conectado */}
+        {(status.microsoft.conectado || status.google.conectado) && (
+          <div className="col-12">
+            <div className="card border">
+              <div className="card-body">
+                <h6 className="fw-semibold mb-1">Preferências de uso</h6>
+                <p className="text-muted fs-12 mb-3">
+                  Define qual serviço é usado ao criar pastas, salvar documentos e agendar audiências.
+                  Opções indisponíveis pertencem a um provedor não conectado.
+                </p>
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label fs-13 fw-medium">Armazenamento de documentos</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={status.storage_provider}
+                      onChange={(e) => atualizarPreferencia('storage_provider', e.target.value)}
+                    >
+                      <option value="onedrive"    disabled={!status.microsoft.conectado}>
+                        OneDrive{!status.microsoft.conectado ? ' (não conectado)' : ''}
+                      </option>
+                      <option value="googledrive" disabled={!status.google.conectado}>
+                        Google Drive{!status.google.conectado ? ' (não conectado)' : ''}
+                      </option>
+                      <option value="ambos"       disabled={!status.microsoft.conectado || !status.google.conectado}>
+                        Ambos (OneDrive + Google Drive){(!status.microsoft.conectado || !status.google.conectado) ? ' — conecte os dois' : ''}
+                      </option>
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fs-13 fw-medium">Calendário para audiências</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={status.calendar_provider}
+                      onChange={(e) => atualizarPreferencia('calendar_provider', e.target.value)}
+                    >
+                      <option value="outlook"  disabled={!status.microsoft.conectado}>
+                        Outlook{!status.microsoft.conectado ? ' (não conectado)' : ''}
+                      </option>
+                      <option value="google"   disabled={!status.google.conectado}>
+                        Google Calendar{!status.google.conectado ? ' (não conectado)' : ''}
+                      </option>
+                      <option value="ambos"    disabled={!status.microsoft.conectado || !status.google.conectado}>
+                        Ambos (Outlook + Google){(!status.microsoft.conectado || !status.google.conectado) ? ' — conecte os dois' : ''}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       </div>
     </div>

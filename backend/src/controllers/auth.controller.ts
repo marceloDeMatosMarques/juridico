@@ -9,6 +9,22 @@ import { microsoftConfig, MS_TOKEN_URL, MS_AUTH_URL } from '../config/microsoft'
 import { createOAuth2Client, googleScopes } from '../config/google'
 import { createError } from '../middleware/errorHandler'
 
+function autoPreferences(
+  current: { storage_provider: string; calendar_provider: string },
+  msConnected: boolean,
+  googleConnected: boolean,
+): { storage_provider?: string; calendar_provider?: string } {
+  const u: { storage_provider?: string; calendar_provider?: string } = {}
+  if (msConnected && !googleConnected) {
+    if (current.storage_provider === 'googledrive' || current.storage_provider === 'ambos') u.storage_provider = 'onedrive'
+    if (current.calendar_provider === 'google'    || current.calendar_provider === 'ambos') u.calendar_provider = 'outlook'
+  } else if (!msConnected && googleConnected) {
+    if (current.storage_provider === 'onedrive' || current.storage_provider === 'ambos') u.storage_provider = 'googledrive'
+    if (current.calendar_provider === 'outlook' || current.calendar_provider === 'ambos') u.calendar_provider = 'google'
+  }
+  return u
+}
+
 type MsProfile = { mail?: string; userPrincipalName?: string; displayName?: string; otherMails?: string[] }
 
 function extractMicrosoftEmail(profile: MsProfile): string {
@@ -203,9 +219,13 @@ export const authController = {
 
         const currentUser = await prisma.user.findUnique({
           where: { id: userId },
-          select: { calendar_provider: true, google_access_token: true },
+          select: { storage_provider: true, calendar_provider: true, google_access_token: true },
         })
-        const calendarUpdate = currentUser?.calendar_provider === 'google' ? { calendar_provider: 'ambos' } : {}
+        const prefUpdate = autoPreferences(
+          { storage_provider: currentUser?.storage_provider ?? 'onedrive', calendar_provider: currentUser?.calendar_provider ?? 'outlook' },
+          true,
+          !!currentUser?.google_access_token,
+        )
 
         await prisma.user.update({
           where: { id: userId },
@@ -214,7 +234,7 @@ export const authController = {
             microsoft_refresh_token: data.refresh_token,
             microsoft_token_expires_at: expiresAt,
             microsoft_email: msEmail,
-            ...calendarUpdate,
+            ...prefUpdate,
           },
         })
         console.log(JSON.stringify({ level: 'info', action: 'microsoft_connected', data: { userId } }))
@@ -267,6 +287,16 @@ export const authController = {
     try {
       if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
 
+      const current = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { storage_provider: true, calendar_provider: true, google_access_token: true },
+      })
+      const prefUpdate = autoPreferences(
+        { storage_provider: current?.storage_provider ?? 'onedrive', calendar_provider: current?.calendar_provider ?? 'outlook' },
+        false,
+        !!current?.google_access_token,
+      )
+
       await prisma.user.update({
         where: { id: req.user.id },
         data: {
@@ -274,6 +304,7 @@ export const authController = {
           microsoft_refresh_token: null,
           microsoft_token_expires_at: null,
           microsoft_email: null,
+          ...prefUpdate,
         },
       })
       res.json({ mensagem: 'Conta Microsoft desconectada' })
@@ -322,12 +353,13 @@ export const authController = {
         // Connect flow: update existing user's Google tokens
         const currentUser = await prisma.user.findUnique({
           where: { id: userId },
-          select: { calendar_provider: true, microsoft_access_token: true },
+          select: { storage_provider: true, calendar_provider: true, microsoft_access_token: true },
         })
-        let calendarProvider: string | undefined
-        if (currentUser?.calendar_provider === 'outlook') {
-          calendarProvider = currentUser.microsoft_access_token ? 'ambos' : 'google'
-        }
+        const prefUpdate = autoPreferences(
+          { storage_provider: currentUser?.storage_provider ?? 'onedrive', calendar_provider: currentUser?.calendar_provider ?? 'outlook' },
+          !!currentUser?.microsoft_access_token,
+          true,
+        )
 
         await prisma.user.update({
           where: { id: userId },
@@ -336,7 +368,7 @@ export const authController = {
             google_refresh_token: tokens.refresh_token ?? null,
             google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
             google_email: profile.email ?? null,
-            ...(calendarProvider ? { calendar_provider: calendarProvider } : {}),
+            ...prefUpdate,
           },
         })
         console.log(JSON.stringify({ level: 'info', action: 'google_connected', data: { userId } }))
@@ -386,6 +418,16 @@ export const authController = {
     try {
       if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
 
+      const current = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { storage_provider: true, calendar_provider: true, microsoft_access_token: true },
+      })
+      const prefUpdate = autoPreferences(
+        { storage_provider: current?.storage_provider ?? 'onedrive', calendar_provider: current?.calendar_provider ?? 'outlook' },
+        !!current?.microsoft_access_token,
+        false,
+      )
+
       await prisma.user.update({
         where: { id: req.user.id },
         data: {
@@ -393,6 +435,7 @@ export const authController = {
           google_refresh_token: null,
           google_token_expires_at: null,
           google_email: null,
+          ...prefUpdate,
         },
       })
       res.json({ mensagem: 'Conta Google desconectada' })
