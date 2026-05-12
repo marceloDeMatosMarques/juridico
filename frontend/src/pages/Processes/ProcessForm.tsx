@@ -82,13 +82,15 @@ export default function ProcessForm() {
 
   const [form, setForm] = useState<FormData>({ ...EMPTY, client_id: searchParams.get('client') ?? '' })
   const [clients, setClients] = useState<Client[]>([])
+  const [loadingClients, setLoadingClients] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
   useEffect(() => {
     api.get<{ data: Client[] }>('/api/clients?limit=100')
       .then(({ data }) => setClients(data.data ?? []))
-      .catch(() => null)
+      .catch(() => setErro('Não foi possível carregar a lista de clientes. Recarregue a página.'))
+      .finally(() => setLoadingClients(false))
   }, [])
 
   useEffect(() => {
@@ -117,6 +119,10 @@ export default function ProcessForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!isEdit && !form.client_id) {
+      setErro('Selecione um cliente antes de salvar.')
+      return
+    }
     setSalvando(true)
     setErro('')
     try {
@@ -169,8 +175,10 @@ export default function ProcessForm() {
                               ? { value: form.client_id, label: clients.find(c => c.id === form.client_id)?.full_name ?? '' }
                               : null}
                             onChange={opt => set('client_id', opt?.value ?? '')}
-                            placeholder="Buscar cliente..."
+                            placeholder={loadingClients ? 'Carregando clientes...' : 'Buscar cliente...'}
                             isSearchable
+                            isDisabled={loadingClients}
+                            isLoading={loadingClients}
                             noOptionsMessage={() => 'Nenhum cliente encontrado'}
                             loadingMessage={() => 'Carregando...'}
                             styles={selectStyles}
