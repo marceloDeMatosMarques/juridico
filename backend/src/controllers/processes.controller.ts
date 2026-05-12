@@ -6,7 +6,7 @@ import { geminiService } from '../services/GeminiService'
 import type { ProcessType, ProcessStatus, CourtSystem } from '@prisma/client'
 
 const processSchema = z.object({
-  client_id:        z.string().uuid(),
+  client_id:        z.string().uuid('Selecione um cliente'),
   case_title:       z.string().min(2, 'Título obrigatório'),
   process_number:   z.string().optional().transform(v => v?.trim() || undefined),
   process_type:     z.string().optional(),
