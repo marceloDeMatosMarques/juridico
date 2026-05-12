@@ -50,10 +50,12 @@ export class StorageService {
           }
         }
       } else {
+        const reason = result.reason
+        const detail = reason?.response?.data ?? reason?.response?.status ?? reason?.message
         console.error(JSON.stringify({
           level: 'error',
           action: 'storage_folder_creation_failed',
-          data: { provider: providers[i].providerName, userId: this.userId, error: result.reason?.message },
+          data: { provider: providers[i].providerName, userId: this.userId, error: reason?.message, detail },
         }))
       }
     })
