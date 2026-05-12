@@ -1,5 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import Select, { type StylesConfig } from 'react-select'
 import { api } from '../../services/api'
 import { aplicarMascaraProcesso } from '../../utils/processo'
 
@@ -19,6 +20,31 @@ type FormData = {
 }
 
 type Client = { id: string; full_name: string }
+type ClientOption = { value: string; label: string }
+
+const selectStyles: StylesConfig<ClientOption> = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: 'calc(1.5em + 0.75rem + 2px)',
+    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+    borderRadius: '0.375rem',
+    fontSize: '0.875rem',
+    '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#dee2e6' },
+  }),
+  valueContainer: (base) => ({ ...base, padding: '0.25rem 0.75rem' }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  placeholder: (base) => ({ ...base, color: '#6c757d' }),
+  menu: (base) => ({ ...base, zIndex: 9999, fontSize: '0.875rem' }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected ? '#0d6efd' : state.isFocused ? '#e9ecef' : 'white',
+    color: state.isSelected ? 'white' : '#212529',
+    cursor: 'pointer',
+  }),
+  singleValue: (base) => ({ ...base, color: '#212529' }),
+  indicatorSeparator: () => ({ display: 'none' }),
+}
 
 const PROCESS_TYPES = [
   { value: 'civil_consumidor', label: 'Civil — Consumidor' },
@@ -56,7 +82,6 @@ export default function ProcessForm() {
 
   const [form, setForm] = useState<FormData>({ ...EMPTY, client_id: searchParams.get('client') ?? '' })
   const [clients, setClients] = useState<Client[]>([])
-  const [clientSearch, setClientSearch] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
@@ -114,10 +139,6 @@ export default function ProcessForm() {
     } finally { setSalvando(false) }
   }
 
-  const filteredClients = clients.filter(c =>
-    c.full_name.toLowerCase().includes(clientSearch.toLowerCase())
-  )
-
   return (
     <div className="content-page">
       <div className="content">
@@ -142,23 +163,18 @@ export default function ProcessForm() {
                       {!isEdit && (
                         <div className="col-md-12">
                           <label className="form-label">Cliente *</label>
-                          <input
-                            className="form-control mb-1"
+                          <Select<ClientOption>
+                            options={clients.map(c => ({ value: c.id, label: c.full_name }))}
+                            value={form.client_id
+                              ? { value: form.client_id, label: clients.find(c => c.id === form.client_id)?.full_name ?? '' }
+                              : null}
+                            onChange={opt => set('client_id', opt?.value ?? '')}
                             placeholder="Buscar cliente..."
-                            value={clientSearch}
-                            onChange={e => setClientSearch(e.target.value)}
+                            isSearchable
+                            noOptionsMessage={() => 'Nenhum cliente encontrado'}
+                            loadingMessage={() => 'Carregando...'}
+                            styles={selectStyles}
                           />
-                          <select
-                            className="form-select"
-                            value={form.client_id}
-                            onChange={e => set('client_id', e.target.value)}
-                            required
-                          >
-                            <option value="">Selecione o cliente</option>
-                            {filteredClients.map(c => (
-                              <option key={c.id} value={c.id}>{c.full_name}</option>
-                            ))}
-                          </select>
                         </div>
                       )}
 

@@ -52,11 +52,65 @@
 
 ## 📝 Forms & Editors
 
-| Library | Local Path | Purpose |
+| Library | Local Path / Package | Purpose |
 |---------|------------|---------|
 | **Flatpickr** | `assets/libs/flatpickr/` | Date/Time Picker |
 | **Quill** | `assets/libs/quill/` | Rich Text Editor (WYSIWYG) |
 | **Dropzone** | `assets/libs/dropzone/` | File Upload (Drag & Drop) |
+| **react-select** | `npm: react-select@5` | Select pesquisável (equivalente React do Select2) — campo único com busca integrada |
+
+### react-select — Uso no React/TypeScript
+
+> **Quando usar:** Sempre que precisar de um `<select>` com busca integrada (substitui o padrão de dois campos: input de busca + select separado).  
+> **Não usar o Select2 jQuery** — este projeto é React/Vite, sem jQuery no bundle de produção.
+
+```tsx
+import Select, { type StylesConfig } from 'react-select'
+
+type MyOption = { value: string; label: string }
+
+// Estilos Bootstrap 5 compatíveis
+const selectStyles: StylesConfig<MyOption> = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: 'calc(1.5em + 0.75rem + 2px)',
+    borderColor: state.isFocused ? '#86b7fe' : '#dee2e6',
+    boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(13,110,253,.25)' : 'none',
+    borderRadius: '0.375rem',
+    fontSize: '0.875rem',
+    '&:hover': { borderColor: state.isFocused ? '#86b7fe' : '#dee2e6' },
+  }),
+  valueContainer: (base) => ({ ...base, padding: '0.25rem 0.75rem' }),
+  input: (base) => ({ ...base, margin: 0, padding: 0 }),
+  placeholder: (base) => ({ ...base, color: '#6c757d' }),
+  menu: (base) => ({ ...base, zIndex: 9999, fontSize: '0.875rem' }),
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected ? '#0d6efd' : state.isFocused ? '#e9ecef' : 'white',
+    color: state.isSelected ? 'white' : '#212529',
+    cursor: 'pointer',
+  }),
+  singleValue: (base) => ({ ...base, color: '#212529' }),
+  indicatorSeparator: () => ({ display: 'none' }),
+}
+
+// Uso no componente:
+const [options] = useState<MyOption[]>([
+  { value: 'id1', label: 'Nome 1' },
+  { value: 'id2', label: 'Nome 2' },
+])
+const [selected, setSelected] = useState<string>('')
+
+<Select<MyOption>
+  options={options}
+  value={selected ? options.find(o => o.value === selected) ?? null : null}
+  onChange={opt => setSelected(opt?.value ?? '')}
+  placeholder="Buscar..."
+  isSearchable
+  noOptionsMessage={() => 'Nenhum resultado'}
+  styles={selectStyles}
+/>
+```
 
 ---
 
