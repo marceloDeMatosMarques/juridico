@@ -329,7 +329,6 @@ function WhatsAppCard() {
 
 export default function Providers() {
   const setProviderStatus = useAuthStore((s) => s.setProviderStatus)
-  const accessToken = useAuthStore((s) => s.accessToken)
   const [status, setStatus] = useState<ProvidersStatus | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
@@ -418,9 +417,12 @@ export default function Providers() {
                 <>
                   <span className="badge bg-secondary-subtle text-secondary mb-3">○ Desconectado</span>
                   <div>
-                    <a href={`/auth/microsoft?token=${accessToken ?? ''}`} className="btn btn-sm btn-outline-primary">
+                    <button
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => { window.location.href = `/auth/microsoft?token=${localStorage.getItem('access_token') ?? ''}` }}
+                    >
                       Conectar com Microsoft
-                    </a>
+                    </button>
                   </div>
                 </>
               )}
@@ -471,9 +473,12 @@ export default function Providers() {
                 <>
                   <span className="badge bg-secondary-subtle text-secondary mb-3">○ Desconectado</span>
                   <div>
-                    <a href={`/auth/google?token=${accessToken ?? ''}`} className="btn btn-sm btn-outline-danger">
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => { window.location.href = `/auth/google?token=${localStorage.getItem('access_token') ?? ''}` }}
+                    >
                       Conectar com Google
-                    </a>
+                    </button>
                   </div>
                 </>
               )}
