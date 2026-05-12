@@ -209,6 +209,31 @@ export const videosController = {
 
       const { fileName, fileSize, mimeType, targetProvider } = parsed.data
       const storageService = new StorageService(req.user.id)
+
+      // Lazy-create cloud folders if process was created without storage connected
+      if (!proc.onedrive_folder_id && !proc.google_drive_folder_id) {
+        try {
+          const client = await prisma.client.findUnique({ where: { id: proc.client_id } })
+          const processRef = proc.process_number || proc.case_title
+          const folders = await storageService.createFolderStructure(client?.full_name ?? '', processRef)
+          const u: Record<string, string> = {}
+          if (folders.onedrive) {
+            u.onedrive_folder_id      = folders.onedrive.folderId
+            u.onedrive_folder_url     = folders.onedrive.folderUrl
+            u.onedrive_docs_folder_id = folders.onedrive.docsFolderId
+          }
+          if (folders.googledrive) {
+            u.google_drive_folder_id      = folders.googledrive.folderId
+            u.google_drive_folder_url     = folders.googledrive.folderUrl
+            u.google_drive_docs_folder_id = folders.googledrive.docsFolderId
+          }
+          if (Object.keys(u).length) {
+            const refreshed = await prisma.process.update({ where: { id: proc.id }, data: u })
+            Object.assign(proc, refreshed)
+          }
+        } catch { /* createVideoUploadSession will throw its own error if still missing */ }
+      }
+
       const session = await storageService.createVideoUploadSession(proc, fileName, fileSize, mimeType, targetProvider)
       res.json(session)
     } catch (err: unknown) {
