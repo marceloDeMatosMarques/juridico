@@ -394,7 +394,10 @@ export default function Providers() {
 
               {status.microsoft.conectado ? (
                 <>
-                  <span className="badge bg-success-subtle text-success mb-2">● Conectado</span>
+                  <span className="badge bg-success-subtle text-success mb-1">● Conectado</span>
+                  {status.microsoft.email && (
+                    <p className="text-muted fs-13 mb-2">{status.microsoft.email}</p>
+                  )}
                   <div className="mb-3">
                     <label className="form-label fs-13">Preferência de armazenamento</label>
                     <select

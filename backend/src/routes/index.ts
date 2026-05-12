@@ -18,6 +18,7 @@ import { portalAuthController } from '../controllers/portalAuth.controller'
 const router = Router()
 
 router.get('/settings/providers', auth, authController.providersStatus)
+router.put('/settings/providers', auth, authController.updateProviderPreferences)
 
 router.use('/clients',               clientsRouter)
 router.use('/intake',                intakeRouter)

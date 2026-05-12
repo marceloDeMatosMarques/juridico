@@ -178,13 +178,27 @@ export const authController = {
       const expiresAt = new Date(Date.now() + data.expires_in * 1000)
 
       if (userId) {
-        // Connect flow: update existing user's Microsoft tokens
+        // Connect flow: fetch Microsoft profile email then update user
+        const graphRes = await axios.get<{ mail?: string; userPrincipalName?: string }>(
+          'https://graph.microsoft.com/v1.0/me',
+          { headers: { Authorization: `Bearer ${data.access_token}` } }
+        )
+        const msEmail = graphRes.data.mail ?? graphRes.data.userPrincipalName ?? null
+
+        const currentUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { calendar_provider: true, google_access_token: true },
+        })
+        const calendarUpdate = currentUser?.calendar_provider === 'google' ? { calendar_provider: 'ambos' } : {}
+
         await prisma.user.update({
           where: { id: userId },
           data: {
             microsoft_access_token: data.access_token,
             microsoft_refresh_token: data.refresh_token,
             microsoft_token_expires_at: expiresAt,
+            microsoft_email: msEmail,
+            ...calendarUpdate,
           },
         })
         console.log(JSON.stringify({ level: 'info', action: 'microsoft_connected', data: { userId } }))
@@ -241,6 +255,7 @@ export const authController = {
           microsoft_access_token: null,
           microsoft_refresh_token: null,
           microsoft_token_expires_at: null,
+          microsoft_email: null,
         },
       })
       res.json({ mensagem: 'Conta Microsoft desconectada' })
@@ -287,6 +302,15 @@ export const authController = {
 
       if (userId) {
         // Connect flow: update existing user's Google tokens
+        const currentUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { calendar_provider: true, microsoft_access_token: true },
+        })
+        let calendarProvider: string | undefined
+        if (currentUser?.calendar_provider === 'outlook') {
+          calendarProvider = currentUser.microsoft_access_token ? 'ambos' : 'google'
+        }
+
         await prisma.user.update({
           where: { id: userId },
           data: {
@@ -294,6 +318,7 @@ export const authController = {
             google_refresh_token: tokens.refresh_token ?? null,
             google_token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
             google_email: profile.email ?? null,
+            ...(calendarProvider ? { calendar_provider: calendarProvider } : {}),
           },
         })
         console.log(JSON.stringify({ level: 'info', action: 'google_connected', data: { userId } }))
@@ -358,6 +383,23 @@ export const authController = {
     }
   },
 
+  // ── Preferências dos providers ────────────────────────────────────
+
+  async updateProviderPreferences(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
+      const { storage_provider, calendar_provider } = req.body as Record<string, string>
+      const update: Record<string, string> = {}
+      if (storage_provider) update.storage_provider = storage_provider
+      if (calendar_provider) update.calendar_provider = calendar_provider
+      if (Object.keys(update).length === 0) { res.status(400).json({ erro: 'Nenhuma preferência informada' }); return }
+      await prisma.user.update({ where: { id: req.user.id }, data: update })
+      res.json({ mensagem: 'Preferências atualizadas' })
+    } catch (err) {
+      next(err)
+    }
+  },
+
   // ── Status dos providers ───────────────────────────────────────────
 
   async providersStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -369,6 +411,7 @@ export const authController = {
         select: {
           microsoft_access_token: true,
           microsoft_token_expires_at: true,
+          microsoft_email: true,
           google_access_token: true,
           google_email: true,
           storage_provider: true,
@@ -380,6 +423,7 @@ export const authController = {
         microsoft: {
           conectado: !!user?.microsoft_access_token,
           expira_em: user?.microsoft_token_expires_at,
+          email: user?.microsoft_email ?? null,
         },
         google: {
           conectado: !!user?.google_access_token,

@@ -28,6 +28,7 @@ model User {
   microsoft_access_token    String?   @db.Text
   microsoft_refresh_token   String?   @db.Text
   microsoft_token_expires_at DateTime?
+  microsoft_email           String?
   // Google OAuth
   google_access_token       String?   @db.Text
   google_refresh_token      String?   @db.Text

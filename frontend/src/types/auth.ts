@@ -17,7 +17,7 @@ export interface AuthTokens {
 }
 
 export interface ProvidersStatus {
-  microsoft: { conectado: boolean; expira_em: string | null }
+  microsoft: { conectado: boolean; expira_em: string | null; email: string | null }
   google: { conectado: boolean; email: string | null }
   storage_provider: string
   calendar_provider: string
