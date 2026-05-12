@@ -9,6 +9,21 @@ import { microsoftConfig, MS_TOKEN_URL, MS_AUTH_URL } from '../config/microsoft'
 import { createOAuth2Client, googleScopes } from '../config/google'
 import { createError } from '../middleware/errorHandler'
 
+type MsProfile = { mail?: string; userPrincipalName?: string; displayName?: string; otherMails?: string[] }
+
+function extractMicrosoftEmail(profile: MsProfile): string {
+  if (profile.mail) return profile.mail
+  if (profile.otherMails?.[0]) return profile.otherMails[0]
+  const upn = profile.userPrincipalName ?? ''
+  const extIdx = upn.indexOf('#EXT#')
+  if (extIdx !== -1) {
+    const local = upn.substring(0, extIdx)
+    const lastUnderscore = local.lastIndexOf('_')
+    if (lastUnderscore !== -1) return `${local.substring(0, lastUnderscore)}@${local.substring(lastUnderscore + 1)}`
+  }
+  return upn
+}
+
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
   password: z.string().min(1, 'Senha obrigatória'),
@@ -179,11 +194,11 @@ export const authController = {
 
       if (userId) {
         // Connect flow: fetch Microsoft profile email then update user
-        const graphRes = await axios.get<{ mail?: string; userPrincipalName?: string }>(
-          'https://graph.microsoft.com/v1.0/me',
+        const graphRes = await axios.get<MsProfile>(
+          'https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,otherMails,displayName',
           { headers: { Authorization: `Bearer ${data.access_token}` } }
         )
-        const msEmail = graphRes.data.mail ?? graphRes.data.userPrincipalName ?? null
+        const msEmail = extractMicrosoftEmail(graphRes.data) || null
 
         const currentUser = await prisma.user.findUnique({
           where: { id: userId },
@@ -205,11 +220,11 @@ export const authController = {
         res.redirect(`${process.env.FRONTEND_URL}/configuracoes/provedores?microsoft=conectado`)
       } else {
         // Login flow: fetch profile from Microsoft Graph
-        const graphRes = await axios.get<{ mail?: string; userPrincipalName?: string; displayName?: string }>(
-          'https://graph.microsoft.com/v1.0/me',
+        const graphRes = await axios.get<MsProfile>(
+          'https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName,otherMails,displayName',
           { headers: { Authorization: `Bearer ${data.access_token}` } }
         )
-        const email = graphRes.data.mail ?? graphRes.data.userPrincipalName ?? ''
+        const email = extractMicrosoftEmail(graphRes.data)
         const name = graphRes.data.displayName ?? email
         if (!email) throw createError('Não foi possível obter o e-mail da conta Microsoft', 400)
 
@@ -219,14 +234,16 @@ export const authController = {
             data: { name, email, password_hash: '', role: 'advogado',
               microsoft_access_token: data.access_token,
               microsoft_refresh_token: data.refresh_token,
-              microsoft_token_expires_at: expiresAt },
+              microsoft_token_expires_at: expiresAt,
+              microsoft_email: email },
           })
         } else {
           await prisma.user.update({
             where: { id: user.id },
             data: { microsoft_access_token: data.access_token,
               microsoft_refresh_token: data.refresh_token,
-              microsoft_token_expires_at: expiresAt },
+              microsoft_token_expires_at: expiresAt,
+              microsoft_email: email },
           })
         }
 
