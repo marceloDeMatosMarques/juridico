@@ -1,0 +1,36 @@
+# ============================================
+# Redis Alpine - Cache e Filas
+# ============================================
+# Porta: 6379
+# Sem senha
+# Persistência: AOF (Append Only File)
+# Rede: app_database
+# ============================================
+
+version: "3.8"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --port 6379 --appendonly yes
+    networks:
+      - app_database
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:
+
+networks:
+  # Rede external compartilhada entre todos os stacks
+  # Criar com: docker network create app_database
+  # MUDANÇA: era "lex-network" no setup antigo (/opt/lex-services/)
+  app_database:
+    external: true

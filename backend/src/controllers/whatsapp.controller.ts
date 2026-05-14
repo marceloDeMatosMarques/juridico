@@ -87,7 +87,23 @@ export const whatsappController = {
       const svc = await getEvolutionService(req.user.id)
       if (!svc) { res.status(400).json({ erro: 'Evolution API não configurada' }); return }
 
-      // Create or reconnect instance
+      const settings = await prisma.settings.findUnique({ where: { user_id: req.user.id } })
+      const instanceName = settings?.evolution_instance_name ?? 'juriscontrol'
+      const webhookBase = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`
+
+      // If already connected, just re-register webhook and confirm
+      const currentState = await svc.getConnectionState()
+      if (currentState === 'open') {
+        svc.setWebhook(`${webhookBase}/api/whatsapp/webhook`).catch(() => null)
+        await prisma.user.update({
+          where: { id: req.user.id },
+          data:  { whatsapp_instance_id: instanceName, whatsapp_connected: true },
+        })
+        res.json({ qrcode: null, connected: true, message: 'WhatsApp conectado' })
+        return
+      }
+
+      // Not connected — create or reconnect instance to get QR
       let qrBase64: string | null = null
       try {
         const result = await svc.createInstance()
@@ -97,12 +113,7 @@ export const whatsappController = {
         qrBase64 = await svc.getQRCode()
       }
 
-      // Configure webhook URL (best-effort)
-      const webhookBase = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`
       svc.setWebhook(`${webhookBase}/api/whatsapp/webhook`).catch(() => null)
-
-      const settings = await prisma.settings.findUnique({ where: { user_id: req.user.id } })
-      const instanceName = settings?.evolution_instance_name ?? 'juriscontrol'
 
       await prisma.user.update({
         where: { id: req.user.id },

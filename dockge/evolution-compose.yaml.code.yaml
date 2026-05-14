@@ -1,0 +1,136 @@
+# ============================================
+# Evolution API v2.1.1
+# ============================================
+# URL:     https://evo.m3br.com.br
+# Porta:   5001 (interno: 8080)
+# Manager: https://evo.m3br.com.br/manager
+# API Key: Evo@ApiKey#2024!M3br
+# Docs:    https://doc.evolution-api.com/v2/pt
+# ============================================
+#
+# MUDANÇAS em relação ao setup antigo (/opt/lex-services/):
+#   - Porta: 3008 → 5001
+#   - Rede:  lex-network → app_database (external)
+#   - Stack: compose individual no Dockge (não mais monolito)
+#   - CONFIG_SESSION_PHONE_VERSION adicionado (resolve erro 405 / QR não gerado)
+# ============================================
+
+version: "3.7"
+
+services:
+  evolution-api:
+    image: atendai/evolution-api:v2.1.1
+    container_name: evolution-api
+    restart: always
+    ports:
+      # MUDANÇA: era 3008:8080 no setup antigo (/opt/lex-services/)
+      - "5001:8080"
+    networks:
+      # MUDANÇA: era "lex-network" no setup antigo
+      - app_database
+    environment:
+      # ============================================
+      # SERVIDOR
+      # ============================================
+      - SERVER_URL=https://evo.m3br.com.br
+      - CORS_ORIGIN=*
+      - CORS_METHODS=POST,GET,PUT,DELETE
+      - CORS_CREDENTIALS=true
+      - DEL_INSTANCE=true
+
+      # ============================================
+      # LOGS
+      # Valores válidos: ERROR, WARN, DEBUG, INFO, LOG, VERBOSE
+      # Não usar: DEBUG (maiúsculo isolado) ou LOG_BAILEYS=true — causam erro pino
+      # ============================================
+      - LOG_LEVEL=ERROR,WARN,DEBUG,INFO,LOG,VERBOSE,DARK,WEBHOOKS
+      - LOG_COLOR=true
+      - LOG_BAILEYS=error
+
+      # ============================================
+      # AUTENTICAÇÃO
+      # ============================================
+      - AUTHENTICATION_API_KEY=Evo@ApiKey#2024!M3br
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+
+      # ============================================
+      # DATABASE - POSTGRESQL
+      # Usa o container "postgres" na rede app_database
+      # ============================================
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:PgEvolution2024@postgres:5432/evolution
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution_v2
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_LABELS=true
+      - DATABASE_SAVE_DATA_HISTORIC=true
+
+      # ============================================
+      # REDIS
+      # Usa o container "redis" na rede app_database
+      # ============================================
+      - REDIS_ENABLED=true
+      - REDIS_URI=redis://redis:6379
+      - REDIS_PREFIX_KEY=evolution
+
+      # ============================================
+      # CACHE REDIS
+      # ============================================
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://redis:6379
+      - CACHE_REDIS_PREFIX_KEY=evolution_cache
+      - CACHE_REDIS_SAVE_INSTANCES=false
+      - CACHE_LOCAL_ENABLED=false
+
+      # ============================================
+      # VERSÃO DO PROTOCOLO WHATSAPP  ← VARIÁVEL CRÍTICA
+      # ============================================
+      # SEM esta variável: Baileys usa versão desatualizada → WhatsApp retorna
+      # erro 405 "Connection Failure" → QR Code nunca é gerado.
+      #
+      # Como atualizar quando parar de funcionar:
+      #   1. Acessar: https://wppconnect.io/pt-BR/whatsapp-versions/
+      #   2. Copiar versão mais recente (formato 2.3000.XXXXXXXXX)
+      #   3. Atualizar o valor abaixo e reiniciar o stack no Dockge
+      # ============================================
+      - CONFIG_SESSION_PHONE_CLIENT=Evolution API v2
+      - CONFIG_SESSION_PHONE_NAME=Chrome
+      - CONFIG_SESSION_PHONE_VERSION=2.3000.1039501489
+
+      # ============================================
+      # QRCODE
+      # ============================================
+      - QRCODE_LIMIT=30
+      - QRCODE_COLOR=#198754
+
+      # ============================================
+      # INTEGRAÇÕES (desabilitadas — habilitar conforme necessidade)
+      # ============================================
+      - RABBITMQ_ENABLED=false
+      - S3_ENABLED=false
+      - TYPEBOT_ENABLED=false
+      - CHATWOOT_ENABLED=false
+      - OPENAI_ENABLED=false
+      - DEX_ENABLED=false
+
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  evolution_instances:
+  evolution_store:
+
+networks:
+  # MUDANÇA: rede external compartilhada entre todos os stacks
+  # Criar com: docker network create app_database
+  app_database:
+    external: true
