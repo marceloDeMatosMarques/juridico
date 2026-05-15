@@ -2,10 +2,22 @@ import { useState, useEffect, FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { validarCPF, aplicarMascaraCPF } from '../../utils/cpf'
 
+type ProcessoAtivo = {
+  id: string; case_title: string; status: string
+  pending_deadline: string | null; process_number: string | null
+}
+type ClienteData = {
+  full_name: string; email?: string; cpf?: string; rg?: string; birth_date?: string
+  phone?: string; whatsapp?: string; address?: string; address_number?: string
+  complement?: string; neighborhood?: string; city?: string; state?: string
+  zip_code?: string; gender?: string; social_name?: string; marital_status?: string
+  nationality?: string; profession?: string
+}
 type IntakeStatus = {
-  token: string; expires_at: string; process_id?: string
-  client?: { full_name: string; email?: string } | null
+  token: string; type: string; expires_at: string; process_id?: string
+  client?: ClienteData | null
   advogado?: { name: string; oab_number?: string; oab_state?: string } | null
+  processos?: ProcessoAtivo[]
 }
 type DocExistente = { id: string; file_name: string; document_type: string; upload_date: string }
 
@@ -39,7 +51,31 @@ export default function IntakeForm() {
       .then((d: IntakeStatus & { erro?: string }) => {
         if (d.erro) { setErroToken(d.erro); return }
         setStatus(d)
-        if (d.client?.full_name) setForm(prev => ({ ...prev, full_name: d.client!.full_name, email: d.client?.email ?? '' }))
+        if (d.client) {
+          const c = d.client
+          setCpfInput(c.cpf ?? '')
+          setForm(prev => ({
+            ...prev,
+            full_name:      c.full_name   ?? prev.full_name,
+            email:          c.email       ?? prev.email,
+            rg:             c.rg          ?? prev.rg,
+            birth_date:     c.birth_date ? new Date(c.birth_date).toISOString().split('T')[0] : prev.birth_date,
+            phone:          c.phone       ?? prev.phone,
+            whatsapp:       c.whatsapp    ?? prev.whatsapp,
+            address:        c.address     ?? prev.address,
+            address_number: c.address_number ?? prev.address_number,
+            complement:     c.complement  ?? prev.complement,
+            neighborhood:   c.neighborhood ?? prev.neighborhood,
+            city:           c.city        ?? prev.city,
+            state:          c.state       ?? prev.state,
+            zip_code:       c.zip_code    ?? prev.zip_code,
+            gender:         c.gender      ?? prev.gender,
+            social_name:    c.social_name ?? prev.social_name,
+            marital_status: c.marital_status ?? prev.marital_status,
+            nationality:    c.nationality ?? prev.nationality,
+            profession:     c.profession  ?? prev.profession,
+          }))
+        }
       })
       .catch(() => setErroToken('Erro ao carregar formulário.'))
   }, [token])
@@ -277,7 +313,38 @@ export default function IntakeForm() {
           </div>
         </div>
 
-        {/* Seção 3 — Documentos (só com process_id) */}
+        {/* Seção 3 — Processos ativos (só no modo "atualizar") */}
+        {status.type === 'atualizar' && status.processos && status.processos.length > 0 && (
+          <div className="card mb-3">
+            <div className="card-body">
+              <h6 className="card-title">3. Seus processos ativos</h6>
+              <div className="table-responsive">
+                <table className="table table-sm">
+                  <thead><tr><th>Caso</th><th>Nº</th><th>Status</th><th>Prazo</th></tr></thead>
+                  <tbody>
+                    {status.processos.map(p => (
+                      <tr key={p.id}>
+                        <td className="fw-medium fs-13">{p.case_title}</td>
+                        <td className="text-muted fs-13">{p.process_number ?? '—'}</td>
+                        <td><span className="badge bg-primary-subtle text-primary">{p.status.replace(/_/g, ' ')}</span></td>
+                        <td className="fs-13">
+                          {p.pending_deadline
+                            ? <span className={new Date(p.pending_deadline) < new Date() ? 'text-danger fw-semibold' : 'text-muted'}>
+                                {new Date(p.pending_deadline).toLocaleDateString('pt-BR')}
+                              </span>
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-muted fs-12 mt-2 mb-0">Para dúvidas sobre seus processos, entre em contato com o escritório.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Seção 4 — Documentos (só com process_id) */}
         {status.process_id && (
           <div className="card mb-3">
             <div className="card-body">
@@ -311,17 +378,17 @@ export default function IntakeForm() {
           </div>
         )}
 
-        {/* Seção 4 — Resumo (só com process_id) */}
+        {/* Seção 5 — Resumo (só com process_id) */}
         {status.process_id && (
           <div className="card mb-3">
             <div className="card-body">
-              <h6 className="card-title">4. Resumo do caso (opcional)</h6>
+              <h6 className="card-title">5. Resumo do caso (opcional)</h6>
               <textarea className="form-control" rows={4} value={form.case_description} onChange={e => set('case_description', e.target.value)} placeholder="Descreva brevemente o que aconteceu..." />
             </div>
           </div>
         )}
 
-        {/* Seção 5 — LGPD */}
+        {/* Seção 6 — LGPD */}
         <div className="card mb-3">
           <div className="card-body">
             <div className="form-check">

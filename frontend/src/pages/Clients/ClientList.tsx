@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
 import { useDebounce } from '../../hooks/useDebounce'
 import { mascararCPF } from '../../utils/cpf'
 import type { Client, ClientListResponse } from '../../types/client'
+
+type IntakeNovoForm = { name: string; whatsapp: string; case_title: string }
 
 export default function ClientList() {
   const navigate = useNavigate()
@@ -14,6 +16,12 @@ export default function ClientList() {
   const [busca, setBusca]       = useState('')
   const [status, setStatus]     = useState('')
   const [carregando, setCarregando] = useState(false)
+
+  // Modal intake novo cliente
+  const [showNovoModal, setShowNovoModal] = useState(false)
+  const [novoForm, setNovoForm] = useState<IntakeNovoForm>({ name: '', whatsapp: '', case_title: '' })
+  const [novoLoading, setNovoLoading] = useState(false)
+  const [novoLink, setNovoLink] = useState<string | null>(null)
 
   const buscaDebounced = useDebounce(busca, 300)
 
@@ -26,19 +34,39 @@ export default function ClientList() {
       setClientes(data.data)
       setTotal(data.total)
       setPages(data.pages)
-    } catch { /* erros tratados pelo interceptor */ }
+    } catch { /* tratado pelo interceptor */ }
     finally { setCarregando(false) }
   }, [page, buscaDebounced, status])
 
   useEffect(() => { void carregar() }, [carregar])
   useEffect(() => { setPage(1) }, [buscaDebounced, status])
 
-  async function gerarLinkIntake(clientId: string) {
+  async function gerarLinkIntakeCliente(clientId: string) {
     try {
-      const { data } = await api.post('/api/intake/generate', { client_id: clientId })
+      const { data } = await api.post<{ link: string }>('/api/intake/generate', { client_id: clientId })
       await navigator.clipboard.writeText(data.link)
       alert('Link de intake copiado para a área de transferência!')
     } catch { alert('Erro ao gerar link de intake.') }
+  }
+
+  async function handleNovoIntakeSubmit(e: FormEvent) {
+    e.preventDefault()
+    setNovoLoading(true)
+    try {
+      const { data } = await api.post<{ link: string }>('/api/intake/generate-new', {
+        name:       novoForm.name,
+        whatsapp:   novoForm.whatsapp || undefined,
+        case_title: novoForm.case_title || undefined,
+      })
+      setNovoLink(data.link)
+    } catch { alert('Erro ao gerar link de intake.') }
+    finally { setNovoLoading(false) }
+  }
+
+  function fecharNovoModal() {
+    setShowNovoModal(false)
+    setNovoForm({ name: '', whatsapp: '', case_title: '' })
+    setNovoLink(null)
   }
 
   return (
@@ -60,7 +88,7 @@ export default function ClientList() {
                 <div className="card-body">
 
                   <div className="row mb-3 align-items-center">
-                    <div className="col-md-5">
+                    <div className="col-md-4">
                       <input
                         type="text"
                         className="form-control"
@@ -76,7 +104,15 @@ export default function ClientList() {
                         <option value="inativo">Inativo</option>
                       </select>
                     </div>
-                    <div className="col-md-4 text-end">
+                    <div className="col-md-5 text-end d-flex gap-2 justify-content-end">
+                      <button
+                        className="btn btn-outline-success"
+                        title="Gera um link para um novo cliente se cadastrar e descrever o caso"
+                        onClick={() => setShowNovoModal(true)}
+                      >
+                        <iconify-icon icon="solar:link-circle-linear" className="me-1" />
+                        Intake — Novo Cliente
+                      </button>
                       <button className="btn btn-primary" onClick={() => navigate('/clients/new')}>
                         + Novo Cliente
                       </button>
@@ -122,7 +158,11 @@ export default function ClientList() {
                                   <button className="btn btn-sm btn-outline-secondary" title="Editar" onClick={() => navigate(`/clients/${c.id}/edit`)}>
                                     <iconify-icon icon="solar:pen-linear" />
                                   </button>
-                                  <button className="btn btn-sm btn-outline-primary" title="Gerar link intake" onClick={() => gerarLinkIntake(c.id)}>
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    title="Gerar link intake para este cliente atualizar dados"
+                                    onClick={() => void gerarLinkIntakeCliente(c.id)}
+                                  >
                                     <iconify-icon icon="solar:link-circle-linear" />
                                   </button>
                                 </div>
@@ -134,7 +174,6 @@ export default function ClientList() {
                     </div>
                   )}
 
-                  {/* Paginação */}
                   {pages > 1 && (
                     <div className="d-flex justify-content-between align-items-center mt-3">
                       <small className="text-muted">{total} cliente(s) encontrado(s)</small>
@@ -160,6 +199,85 @@ export default function ClientList() {
           </div>
         </div>
       </div>
+
+      {/* Modal — Intake Novo Cliente */}
+      {showNovoModal && (
+        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Intake — Novo Cliente</h5>
+                <button className="btn-close" onClick={fecharNovoModal} />
+              </div>
+              {novoLink ? (
+                <div className="modal-body">
+                  <div className="alert alert-success">
+                    <iconify-icon icon="solar:check-circle-linear" className="me-2" />
+                    Link gerado com sucesso!
+                  </div>
+                  <p className="text-muted fs-13 mb-2">Envie este link ao cliente para que ele preencha os dados:</p>
+                  <div className="input-group">
+                    <input className="form-control form-control-sm" readOnly value={novoLink} />
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => { void navigator.clipboard.writeText(novoLink); alert('Link copiado!') }}
+                    >
+                      <iconify-icon icon="solar:copy-linear" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={e => void handleNovoIntakeSubmit(e)}>
+                  <div className="modal-body">
+                    <p className="text-muted fs-13 mb-3">
+                      Preencha os dados iniciais do cliente. Um link único será gerado para ele completar o cadastro.
+                    </p>
+                    <div className="mb-3">
+                      <label className="form-label">Nome completo *</label>
+                      <input
+                        className="form-control"
+                        required
+                        value={novoForm.name}
+                        onChange={e => setNovoForm(p => ({ ...p, name: e.target.value }))}
+                        placeholder="Nome do cliente"
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">WhatsApp</label>
+                      <input
+                        className="form-control"
+                        value={novoForm.whatsapp}
+                        onChange={e => setNovoForm(p => ({ ...p, whatsapp: e.target.value }))}
+                        placeholder="(11) 99999-9999"
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Título do caso (opcional)</label>
+                      <input
+                        className="form-control"
+                        value={novoForm.case_title}
+                        onChange={e => setNovoForm(p => ({ ...p, case_title: e.target.value }))}
+                        placeholder="Ex: Ação indenizatória por dano moral"
+                      />
+                    </div>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-outline-secondary" onClick={fecharNovoModal}>Cancelar</button>
+                    <button type="submit" className="btn btn-success" disabled={novoLoading}>
+                      {novoLoading ? 'Gerando...' : 'Gerar Link'}
+                    </button>
+                  </div>
+                </form>
+              )}
+              {novoLink && (
+                <div className="modal-footer">
+                  <button className="btn btn-outline-secondary" onClick={fecharNovoModal}>Fechar</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

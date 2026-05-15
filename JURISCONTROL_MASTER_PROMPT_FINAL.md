@@ -2883,3 +2883,240 @@ model CaseRequest {
 - **Google Drive upload de vídeo:** usar resumable upload session da Drive API v3 (`POST https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable`). O fluxo de chunks é idêntico ao OneDrive.
 - **Google Calendar:** ao criar o evento, solicitar `conferenceData` para gerar link do Google Meet automaticamente (equivalente ao Teams Meeting do Outlook).
 - **Deduplicação no FullCalendar:** quando ambos os calendários estão ativos, eventos com mesmo título e mesma data devem ser exibidos como um único item com badge "Sincronizado" em vez de duplicados.
+
+---
+
+## 19. CORREÇÃO ARQUITETURAL — CLIENTES, INTAKE E ISOLAMENTO DE DADOS
+
+> **Contexto:** Identificado em 2026-05-15 a partir de uso real em produção. Bug crítico de isolamento de documentos e inconsistência no fluxo de intake para novos clientes. Esta seção descreve a arquitetura correta que deve ser seguida por todas as sessões futuras.
+
+---
+
+### 19.1 Modelo de relacionamento Advogado ↔ Cliente
+
+**Regra fundamental:** Cada advogado possui seus próprios registros de clientes. `Client.user_id` pertence a UM único advogado — isso é CORRETO e não deve ser alterado.
+
+Um mesmo indivíduo (ex: "Maria") que é cliente de dois advogados diferentes (João e Paulo) existe como **dois registros separados** no banco — um com `user_id = João` e outro com `user_id = Paulo`. Cada advogado enxerga apenas seus próprios clientes e seus próprios processos.
+
+```
+Advogado João              Advogado Paulo
+├── Client: Maria (id: A)  ├── Client: Maria (id: B)   ← IDs diferentes, dados isolados
+│   └── Process #1         │   └── Process #3
+└── Client: Carlos (id: C) └── Client: Ana (id: D)
+```
+
+**Por que não usar tabela N:N (ClientAdvogado)?**
+- A realidade jurídica brasileira é que cada escritório tem sua própria ficha do cliente com seus próprios documentos. Não há compartilhamento de dados entre escritórios concorrentes.
+- A arquitetura atual é simples, segura e correta para o modelo de negócio.
+
+---
+
+### 19.2 Bug de isolamento — documentos de outro advogado visíveis
+
+**Causa:** A query de documentos na tela de cliente buscava `ProcessDocument WHERE process.client_id = clientId` sem filtrar por `process.user_id = req.user.id`.
+
+**Regra absoluta (sem exceção):**
+> Toda query que envolva `Process`, `ProcessDocument`, `Hearing`, `FinancialRecord`, `CourtNotification` ou qualquer outra entidade vinculada a um processo **DEVE** incluir `user_id: req.user.id` no `where`. Sem esse filtro, dados de outro advogado podem vazar.
+
+```typescript
+// ❌ ERRADO — vaza dados de outros advogados
+const docs = await prisma.processDocument.findMany({
+  where: { process: { client_id: clientId } }
+})
+
+// ✅ CORRETO — isolado por advogado
+const docs = await prisma.processDocument.findMany({
+  where: {
+    process: { client_id: clientId, user_id: req.user.id },
+    deleted_at: null,
+  }
+})
+```
+
+---
+
+### 19.3 Schema — mudança em `IntakeToken`
+
+**Problema:** `IntakeToken` não armazenava `user_id`. Quando um novo cliente preenchia um formulário de intake, o backend não sabia a qual advogado vincular o novo `Client`.
+
+**Solução:** Adicionar dois campos ao modelo:
+
+```prisma
+model IntakeToken {
+  id          String    @id @default(uuid())
+  user_id     String                           // ← NOVO: advogado que gerou o link
+  user        User      @relation(fields: [user_id], references: [id])
+  type        String    @default("atualizar")  // ← NOVO: "novo" | "atualizar"
+  process_id  String?
+  client_id   String?
+  client      Client?   @relation(fields: [client_id], references: [id])
+  token       String    @unique @default(uuid())
+  expires_at  DateTime
+  used_at     DateTime?
+  metadata    Json?
+  created_at  DateTime  @default(now())
+}
+```
+
+**Migration necessária:**
+```bash
+npx prisma migrate dev --name add_user_id_type_to_intake_token
+```
+
+**Preenchimento obrigatório ao criar token:**
+```typescript
+await prisma.intakeToken.create({
+  data: {
+    user_id: req.user.id,          // sempre o advogado autenticado
+    type: client_id ? 'atualizar' : 'novo',
+    client_id: client_id ?? null,
+    process_id: process_id ?? null,
+    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    metadata: { ... }
+  }
+})
+```
+
+---
+
+### 19.4 Dois tipos de token — comportamento obrigatório
+
+#### Tipo `"novo"` — link para novo cliente se cadastrar
+
+**Gerado por:** botão **"Intake — Novo Cliente"** no header da `ClientList`  
+**Rota:** `POST /api/intake/generate-new`  
+**Body:** `{ name?, whatsapp?, case_title? }` (dados iniciais opcionais)  
+**Armazena:** `user_id = req.user.id`, `client_id = null`, `type = "novo"`
+
+**Ao submeter (`POST /api/intake/:token/submit`):**
+```typescript
+// O token.user_id indica qual advogado vai "receber" o novo cliente
+await prisma.$transaction([
+  prisma.client.create({
+    data: {
+      user_id: token.user_id,   // ← advogado que gerou o link
+      full_name: body.full_name,
+      cpf: body.cpf,
+      // ... demais campos
+    }
+  }),
+  // criar Process se case_title informado
+  // criar Consent LGPD
+  // marcar token.used_at
+])
+```
+
+**Formulário (frontend):**
+- Campos em branco — cliente preenche tudo do zero
+- Campo "Descreva brevemente o seu caso" (opcional, cria `Process` se preenchido)
+- Consentimento LGPD obrigatório
+- SEM lista de processos ativos (é um novo cliente, não há processos ainda)
+
+---
+
+#### Tipo `"atualizar"` — link para cliente existente atualizar dados
+
+**Gerado por:** botão **"🔗 Gerar link"** na coluna de ações da `ClientList` (por linha de cliente)  
+**Rota:** `POST /api/intake/generate`  
+**Body:** `{ client_id, process_id? }`  
+**Armazena:** `user_id = req.user.id`, `client_id = client_id`, `type = "atualizar"`
+
+**Ao abrir o link (frontend):**
+- Dados pessoais pré-preenchidos com os dados atuais do cliente
+- Se `process_id` informado: exibe seção de upload de documentos + seção de resumo do caso
+- Se sem `process_id`: exibe dados pessoais + campo "Solicitar novo processo" (cria `CaseRequest`)
+- Lista de processos ativos com AQUELE advogado (read-only, com status e prazo)
+
+**Ao submeter:**
+```typescript
+await prisma.$transaction([
+  prisma.client.update({
+    where: { id: token.client_id },
+    data: { ...body }            // atualiza dados do cliente existente
+  }),
+  prisma.consent.create({ ... }), // LGPD
+  prisma.intakeToken.update({
+    where: { token },
+    data: { used_at: new Date() }
+  }),
+])
+```
+
+---
+
+### 19.5 UI — Separação obrigatória dos botões de intake
+
+#### `ClientList.tsx` — header (área de ações globais)
+
+```
+[+ Novo Cliente]    [Intake — Novo Cliente]
+     ↑                       ↑
+Advogado cadastra     Gera link para novo cliente
+diretamente           se auto-cadastrar (token tipo "novo")
+```
+
+- **"+ Novo Cliente"**: abre modal ou navega para `/clients/new` — advogado preenche diretamente
+- **"Intake — Novo Cliente"**: abre modal onde advogado informa nome e WhatsApp do futuro cliente → sistema gera link e envia por WhatsApp (ou exibe para copiar)
+- Os dois botões NÃO devem ficar lado a lado sem distinção visual clara — usar estilos diferentes (ex: `btn-primary` e `btn-outline-success`)
+
+#### `ClientList.tsx` — coluna "Ações" (por linha)
+
+```
+[👁 Ver]  [✏ Editar]  [🔗 Gerar link intake]
+```
+
+- **"🔗 Gerar link intake"**: abre modal para selecionar processo (opcional) e gera token tipo `"atualizar"` para aquele cliente específico
+
+#### `ClientDetails.tsx` — tela de detalhes do cliente (para o advogado)
+
+Deve exibir:
+- Dados pessoais em cards
+- **Lista de processos filtrada por `user_id` do advogado logado** (não todos os processos do cliente)
+- Abas **Ativos** / **Histórico**
+- Por processo: título, número, status (badge colorido), prazo pendente, ações (ver, montar petição)
+- Botão **"🔗 Gerar link intake"** com seletor de processo → gera token `"atualizar"`
+- Botão **"Ativar Portal"** para enviar acesso ao portal do cliente
+
+#### `IntakeForm.tsx` — dois modos de renderização
+
+```typescript
+// Ao carregar o token:
+const isNewClient = intakeToken.type === 'novo'
+
+if (isNewClient) {
+  // modo "novo": campos em branco, sem lista de processos
+} else {
+  // modo "atualizar": campos pré-preenchidos, lista de processos ativos (read-only)
+}
+```
+
+---
+
+### 19.6 Tela de processos no portal do cliente
+
+O portal do cliente (`/portal/processes`) lista processos onde o `client.portal_user_id = req.user.id`. Isso é independente do advogado — o cliente pode ter processos com múltiplos advogados que ativaram o portal para ele.
+
+Regras:
+- O cliente só vê processos cujo `client.portal_user_id` aponta para o seu `User.id`
+- O cliente NÃO vê processos de outros clientes (mesmo que tenham o mesmo CPF)
+- O advogado NÃO vê os processos que outros advogados têm com o mesmo cliente
+
+---
+
+### 19.7 Checklist de implementação desta correção
+
+**Backend:**
+- [ ] Migration: adicionar `user_id` e `type` em `IntakeToken`
+- [ ] `intake.controller.ts` → `generateToken`: salvar `user_id = req.user.id` e `type = "atualizar"`
+- [ ] `intake.controller.ts` → `generateTokenNew`: salvar `user_id = req.user.id` e `type = "novo"`
+- [ ] `intake.controller.ts` → `submit`: usar `token.user_id` ao criar `Client` (tipo "novo")
+- [ ] `intake.controller.ts` → `getStatus`: retornar `token.type` para o frontend saber o modo
+- [ ] `clients.controller.ts` → `getOne`: filtrar processos e documentos por `user_id: req.user.id`
+- [ ] Verificar todos os `findMany` de `ProcessDocument` — garantir `process: { user_id }` no where
+
+**Frontend:**
+- [ ] `ClientList.tsx`: separar botão "Novo Cliente" de "Intake — Novo Cliente" com estilos distintos
+- [ ] `ClientList.tsx`: botão "🔗 Gerar link" por linha de cliente (chama rota `generate` com `client_id`)
+- [ ] `ClientDetails.tsx`: exibir lista de processos filtrada por `user_id`
+- [ ] `IntakeForm.tsx`: renderizar modo "novo" (branco) ou "atualizar" (pré-preenchido) com base em `token.type`
+- [ ] `IntakeForm.tsx` modo "atualizar": exibir lista de processos ativos (read-only) com link para solicitar novo caso

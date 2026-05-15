@@ -131,8 +131,15 @@ export const clientsController = {
         where: { id: req.params.id, user_id: req.user.id, deleted_at: null },
         include: {
           processes: {
-            where: { deleted_at: null },
+            where: { deleted_at: null, user_id: req.user.id },
             orderBy: { created_at: 'desc' },
+            include: {
+              documents: {
+                where: { deleted_at: null },
+                select: { id: true, document_type: true, file_name: true, upload_date: true },
+                orderBy: { order_index: 'asc' },
+              },
+            },
           },
           intake_tokens: {
             where: { expires_at: { gte: new Date() }, used_at: null },

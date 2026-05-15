@@ -6,8 +6,12 @@ import type { Client } from '../../types/client'
 import WhatsAppChat from './WhatsAppChat'
 
 type Process = {
-  id: string; case_title: string; process_number?: string
-  status: string; open_date: string; process_number_null: boolean
+  id: string
+  case_title: string
+  process_number: string | null
+  status: string
+  open_date: string
+  pending_deadline: string | null
 }
 
 const STATUS_ATIVOS  = ['aberto', 'em_andamento', 'aguardando_audiencia']
@@ -170,15 +174,21 @@ export default function ClientDetails() {
                     <div className="table-responsive">
                       <table className="table table-sm align-middle">
                         <thead>
-                          <tr><th>Título</th><th>Nº Processo</th><th>Status</th><th>Abertura</th><th>Ações</th></tr>
+                          <tr><th>Título</th><th>Nº Processo</th><th>Status</th><th>Prazo</th><th>Ações</th></tr>
                         </thead>
                         <tbody>
                           {lista.map(p => (
                             <tr key={p.id}>
                               <td className="fw-medium">{p.case_title}</td>
                               <td className="text-muted fs-13">{p.process_number ?? '—'}</td>
-                              <td><span className={`badge ${STATUS_BADGE[p.status] ?? 'bg-secondary-subtle text-secondary'}`}>{p.status.replace('_', ' ')}</span></td>
-                              <td className="text-muted fs-13">{new Date(p.open_date).toLocaleDateString('pt-BR')}</td>
+                              <td><span className={`badge ${STATUS_BADGE[p.status] ?? 'bg-secondary-subtle text-secondary'}`}>{p.status.replace(/_/g, ' ')}</span></td>
+                              <td className="text-muted fs-13">
+                                {p.pending_deadline
+                                  ? <span className={new Date(p.pending_deadline) < new Date() ? 'text-danger fw-semibold' : ''}>
+                                      {new Date(p.pending_deadline).toLocaleDateString('pt-BR')}
+                                    </span>
+                                  : '—'}
+                              </td>
                               <td>
                                 <div className="d-flex gap-1">
                                   <button className="btn btn-xs btn-outline-secondary" title="Ver processo" onClick={() => navigate(`/processes/${p.id}`)}>
@@ -189,6 +199,12 @@ export default function ClientDetails() {
                                       <iconify-icon icon="solar:folder-open-linear" />
                                     </button>
                                   )}
+                                  <button className="btn btn-xs btn-outline-success" title="Montar petição" onClick={() => navigate(`/processes/${p.id}/petition`)}>
+                                    <iconify-icon icon="solar:document-text-linear" />
+                                  </button>
+                                  <button className="btn btn-xs btn-outline-primary" title="Gerar link intake" onClick={() => void gerarLinkIntake(p.id)}>
+                                    <iconify-icon icon="solar:link-circle-linear" />
+                                  </button>
                                 </div>
                               </td>
                             </tr>

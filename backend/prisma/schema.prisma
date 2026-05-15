@@ -53,6 +53,7 @@ model User {
   whatsapp_messages         WhatsAppMessage[]
   templates                 DocumentTemplate[]
   court_notifications       CourtNotification[]
+  intake_tokens             IntakeToken[]
   settings                  Settings?
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
@@ -120,6 +121,9 @@ model Consent {
 
 model IntakeToken {
   id          String    @id @default(uuid())
+  user_id     String
+  user        User      @relation(fields: [user_id], references: [id])
+  type        String    @default("atualizar")
   process_id  String?
   client_id   String?
   client      Client?   @relation(fields: [client_id], references: [id])

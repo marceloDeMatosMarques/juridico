@@ -98,6 +98,8 @@ export const intakeController = {
       const intakeToken = await prisma.intakeToken.create({
         data: {
           token:      uuidv4(),
+          user_id:    req.user.id,
+          type:       'atualizar',
           client_id,
           process_id,
           expires_at: expiresAt,
@@ -149,6 +151,8 @@ export const intakeController = {
         const intakeToken = await tx.intakeToken.create({
           data: {
             token:      uuidv4(),
+            user_id:    req.user!.id,
+            type:       'novo',
             client_id:  cliente.id,
             process_id: processId,
             expires_at: expiresAt,
@@ -167,22 +171,37 @@ export const intakeController = {
       const intakeToken = await getTokenOrFail(req.params.token, res)
       if (!intakeToken) return
 
-      const advogado = intakeToken.client_id
-        ? await prisma.client
-            .findUnique({ where: { id: intakeToken.client_id } })
-            .then(async c => c ? prisma.user.findUnique({ where: { id: c.user_id }, select: { name: true, oab_number: true, oab_state: true } }) : null)
-        : null
+      const advogado = await prisma.user.findUnique({
+        where: { id: intakeToken.user_id },
+        select: { name: true, oab_number: true, oab_state: true },
+      })
 
       const cliente = intakeToken.client_id
         ? await prisma.client.findUnique({ where: { id: intakeToken.client_id } })
         : null
 
+      // Para tipo "atualizar", busca processos ativos deste cliente com este advogado
+      const processos = (intakeToken.type === 'atualizar' && intakeToken.client_id)
+        ? await prisma.process.findMany({
+            where: {
+              client_id: intakeToken.client_id,
+              user_id:   intakeToken.user_id,
+              deleted_at: null,
+              status: { in: ['aberto', 'em_andamento', 'aguardando_audiencia'] },
+            },
+            select: { id: true, case_title: true, status: true, pending_deadline: true, process_number: true },
+            orderBy: { created_at: 'desc' },
+          })
+        : []
+
       res.json({
         token:      intakeToken.token,
+        type:       intakeToken.type,
         expires_at: intakeToken.expires_at,
         process_id: intakeToken.process_id,
-        client:     cliente ? { full_name: cliente.full_name, email: cliente.email } : null,
+        client:     cliente,
         advogado,
+        processos,
         metadata:   intakeToken.metadata,
       })
     } catch (err) { next(err) }
@@ -279,7 +298,7 @@ export const intakeController = {
               state: data.state, zip_code: data.zip_code, gender: data.gender,
               social_name: data.social_name, marital_status: data.marital_status,
               nationality: data.nationality, profession: data.profession,
-              user_id: 'unknown', // fallback se token foi criado sem client
+              user_id: intakeToken.user_id,
             },
           })
           clienteId = novoCliente.id
