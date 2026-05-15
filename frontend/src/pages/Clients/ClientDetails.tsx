@@ -36,6 +36,7 @@ export default function ClientDetails() {
   const [showChat, setShowChat] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [activatingPortal, setActivatingPortal] = useState(false)
+  const [resendingPortal, setResendingPortal] = useState(false)
   const [portalCredentials, setPortalCredentials] = useState<{ email: string; password: string } | null>(null)
 
   useEffect(() => {
@@ -58,6 +59,21 @@ export default function ClientDetails() {
       alert(msg ?? 'Erro ao ativar portal.')
     } finally {
       setActivatingPortal(false)
+    }
+  }
+
+  async function reenviarPortal() {
+    if (!id) return
+    if (!confirm('Gerar nova senha e reenviar acesso ao portal via WhatsApp?')) return
+    setResendingPortal(true)
+    try {
+      const { data } = await api.post<{ email: string; password: string }>(`/api/clients/${id}/resend-portal`)
+      setPortalCredentials({ email: data.email, password: data.password })
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
+      alert(msg ?? 'Erro ao reenviar credenciais.')
+    } finally {
+      setResendingPortal(false)
     }
   }
 
@@ -150,7 +166,10 @@ export default function ClientDetails() {
                         Ativar Portal
                       </button>
                     ) : (
-                      <span className="badge bg-info-subtle text-info fs-11 align-self-center">Portal ativo</span>
+                      <button className="btn btn-sm btn-info" onClick={reenviarPortal} disabled={resendingPortal} title="Gerar nova senha e reenviar via WhatsApp">
+                        {resendingPortal ? <span className="spinner-border spinner-border-sm me-1" /> : <iconify-icon icon="solar:key-linear" className="me-1" />}
+                        Portal ativo
+                      </button>
                     )}
                   </div>
                   {showChat && (

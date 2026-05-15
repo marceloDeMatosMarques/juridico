@@ -31,6 +31,7 @@ router.use('/dashboard',             dashboardRouter)
 router.use('/portal',                portalRouter)
 router.use('/case-requests',         caseRequestsRouter)
 router.post('/clients/:clientId/activate-portal', auth, requireRole('advogado'), portalAuthController.activatePortal)
+router.post('/clients/:clientId/resend-portal',   auth, requireRole('advogado'), portalAuthController.resendPortal)
 
 export { authRouter }
 export default router

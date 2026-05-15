@@ -104,4 +104,48 @@ export const portalAuthController = {
       res.json({ mensagem: 'Portal ativado com sucesso', email: client.email, password: plainPassword })
     } catch (err) { next(err) }
   },
+
+  async resendPortal(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user) { res.status(401).json({ erro: 'Não autenticado' }); return }
+
+      const client = await prisma.client.findFirst({
+        where: { id: req.params.clientId, user_id: req.user.id, deleted_at: null },
+      })
+      if (!client) { res.status(404).json({ erro: 'Cliente não encontrado' }); return }
+      if (!client.portal_enabled || !client.portal_user_id) {
+        res.status(400).json({ erro: 'Portal não ativado para este cliente' }); return
+      }
+
+      const plainPassword = randomPassword()
+      const hash = await bcrypt.hash(plainPassword, 12)
+
+      await prisma.user.update({
+        where: { id: client.portal_user_id },
+        data: { password_hash: hash, portal_password_changed: false },
+      })
+
+      const portalUrl = process.env.FRONTEND_URL ?? 'https://juriscontrol.com.br'
+      const email = (await prisma.user.findUnique({ where: { id: client.portal_user_id }, select: { email: true } }))?.email ?? ''
+
+      if (client.whatsapp) {
+        const settings = await prisma.settings.findUnique({ where: { user_id: req.user.id } })
+        if (settings?.evolution_instance_name && settings.evolution_api_url && settings.evolution_api_key) {
+          const evo = new EvolutionAPIService(
+            settings.evolution_instance_name,
+            settings.evolution_api_url,
+            settings.evolution_api_key,
+          )
+          const numero = client.whatsapp.replace(/\D/g, '')
+          const numeroFinal = numero.startsWith('55') ? numero : `55${numero}`
+          evo.sendText(
+            numeroFinal,
+            `Olá ${client.full_name}! Suas credenciais de acesso ao portal foram redefinidas.\n\n🔗 Acesse: ${portalUrl}/portal/login\n📧 Login: ${email}\n🔑 Nova senha: ${plainPassword}\n\nPor segurança, altere sua senha no primeiro acesso.`,
+          ).catch(() => null)
+        }
+      }
+
+      res.json({ mensagem: 'Credenciais reenviadas', email, password: plainPassword })
+    } catch (err) { next(err) }
+  },
 }
