@@ -36,6 +36,7 @@ export default function ClientDetails() {
   const [showChat, setShowChat] = useState(false)
   const [carregando, setCarregando] = useState(true)
   const [activatingPortal, setActivatingPortal] = useState(false)
+  const [portalCredentials, setPortalCredentials] = useState<{ email: string; password: string } | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -46,12 +47,12 @@ export default function ClientDetails() {
 
   async function ativarPortal() {
     if (!id) return
-    if (!confirm('Ativar o portal para este cliente? A senha será enviada via WhatsApp.')) return
+    if (!confirm('Ativar o portal para este cliente?')) return
     setActivatingPortal(true)
     try {
       const { data } = await api.post<{ email: string; password: string }>(`/api/clients/${id}/activate-portal`)
       setCliente(prev => prev ? { ...prev, portal_enabled: true } : prev)
-      alert(`Portal ativado!\nE-mail: ${data.email}\nSenha temporária: ${data.password}`)
+      setPortalCredentials({ email: data.email, password: data.password })
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
       alert(msg ?? 'Erro ao ativar portal.')
@@ -154,6 +155,30 @@ export default function ClientDetails() {
                   </div>
                   {showChat && (
                     <WhatsAppChat clientId={cliente.id} onClose={() => setShowChat(false)} />
+                  )}
+                  {portalCredentials && (
+                    <div className="alert alert-success mt-3 mb-0 p-3">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <strong className="fs-13">Portal ativado!</strong>
+                        <button type="button" className="btn-close btn-close-sm" onClick={() => setPortalCredentials(null)} />
+                      </div>
+                      <div className="mt-2 fs-13">
+                        <div className="d-flex align-items-center gap-2 mb-1">
+                          <span className="text-muted" style={{ minWidth: 50 }}>E-mail:</span>
+                          <code className="flex-fill">{portalCredentials.email}</code>
+                          <button className="btn btn-xs btn-outline-secondary" onClick={() => navigator.clipboard.writeText(portalCredentials.email)}>
+                            <iconify-icon icon="solar:copy-linear" />
+                          </button>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="text-muted" style={{ minWidth: 50 }}>Senha:</span>
+                          <code className="flex-fill">{portalCredentials.password}</code>
+                          <button className="btn btn-xs btn-outline-secondary" onClick={() => navigator.clipboard.writeText(portalCredentials.password)}>
+                            <iconify-icon icon="solar:copy-linear" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

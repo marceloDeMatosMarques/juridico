@@ -92,8 +92,10 @@ export const portalAuthController = {
             settings.evolution_api_url,
             settings.evolution_api_key,
           )
+          const numero = client.whatsapp.replace(/\D/g, '')
+          const numeroFinal = numero.startsWith('55') ? numero : `55${numero}`
           evo.sendText(
-            client.whatsapp,
+            numeroFinal,
             `Olá ${client.full_name}! Seu portal foi ativado.\n\n🔗 Acesse: ${portalUrl}/portal/login\n📧 Login: ${client.email}\n🔑 Senha: ${plainPassword}\n\nPor segurança, altere sua senha no primeiro acesso.`,
           ).catch(() => null)
         }
