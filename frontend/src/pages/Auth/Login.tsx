@@ -13,6 +13,8 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   function switchMode(next: 'login' | 'register') {
     setMode(next)
@@ -125,30 +127,50 @@ export default function Login() {
 
                   <div className="form-group mb-3">
                     <label htmlFor="password" className="form-label">Senha</label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder={mode === 'register' ? 'Mínimo 8 caracteres' : '••••••••'}
-                      required
-                      minLength={mode === 'register' ? 8 : undefined}
-                    />
+                    <div className="input-group">
+                      <input
+                        className="form-control"
+                        type={showPassword ? 'text' : 'password'}
+                        id="password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder={mode === 'register' ? 'Mínimo 8 caracteres' : '••••••••'}
+                        required
+                        minLength={mode === 'register' ? 8 : undefined}
+                      />
+                      <button
+                        className="btn btn-outline-secondary"
+                        type="button"
+                        tabIndex={-1}
+                        onClick={() => setShowPassword(v => !v)}
+                      >
+                        <iconify-icon icon={showPassword ? 'solar:eye-closed-linear' : 'solar:eye-linear'} />
+                      </button>
+                    </div>
                   </div>
 
                   {mode === 'register' && (
                     <div className="form-group mb-3">
                       <label htmlFor="confirmPassword" className="form-label">Confirmar senha</label>
-                      <input
-                        className="form-control"
-                        type="password"
-                        id="confirmPassword"
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        placeholder="Repita a senha"
-                        required
-                      />
+                      <div className="input-group">
+                        <input
+                          className="form-control"
+                          type={showConfirm ? 'text' : 'password'}
+                          id="confirmPassword"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          placeholder="Repita a senha"
+                          required
+                        />
+                        <button
+                          className="btn btn-outline-secondary"
+                          type="button"
+                          tabIndex={-1}
+                          onClick={() => setShowConfirm(v => !v)}
+                        >
+                          <iconify-icon icon={showConfirm ? 'solar:eye-closed-linear' : 'solar:eye-linear'} />
+                        </button>
+                      </div>
                     </div>
                   )}
 
