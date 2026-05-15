@@ -254,6 +254,10 @@ export default function IntakeForm() {
                 <label className="form-label">Profissão</label>
                 <input className="form-control" value={form.profession} onChange={e => set('profession', e.target.value)} />
               </div>
+              <div className="col-md-4">
+                <label className="form-label">Nacionalidade</label>
+                <input className="form-control" value={form.nationality} onChange={e => set('nationality', e.target.value)} placeholder="Brasileiro(a)" />
+              </div>
               <div className="col-md-6">
                 <label className="form-label">E-mail</label>
                 <input className="form-control" type="email" value={form.email} onChange={e => set('email', e.target.value)} />
