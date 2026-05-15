@@ -60,6 +60,18 @@ export default function ClientDetails() {
     }
   }
 
+  async function excluirCliente() {
+    if (!id || !cliente) return
+    if (!confirm(`Excluir o cliente "${cliente.full_name}"? Esta ação não pode ser desfeita.`)) return
+    try {
+      await api.delete(`/api/clients/${id}`)
+      navigate('/clients')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
+      alert(msg ?? 'Erro ao excluir cliente.')
+    }
+  }
+
   async function gerarLinkIntake(processId?: string) {
     if (!id) return
     try {
@@ -128,6 +140,9 @@ export default function ClientDetails() {
                         <iconify-icon icon="solar:chat-round-like-linear" className="me-1" />WhatsApp
                       </button>
                     )}
+                    <button className="btn btn-sm btn-outline-danger" onClick={excluirCliente}>
+                      <iconify-icon icon="solar:trash-bin-linear" className="me-1" />Excluir
+                    </button>
                     {!cliente.portal_enabled ? (
                       <button className="btn btn-sm btn-outline-info" onClick={ativarPortal} disabled={activatingPortal}>
                         {activatingPortal ? <span className="spinner-border spinner-border-sm me-1" /> : null}

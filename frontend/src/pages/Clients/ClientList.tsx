@@ -41,6 +41,18 @@ export default function ClientList() {
   useEffect(() => { void carregar() }, [carregar])
   useEffect(() => { setPage(1) }, [buscaDebounced, status])
 
+  async function excluirCliente(clientId: string, nome: string) {
+    if (!confirm(`Excluir o cliente "${nome}"? Esta ação não pode ser desfeita.`)) return
+    try {
+      await api.delete(`/api/clients/${clientId}`)
+      setClientes(prev => prev.filter(c => c.id !== clientId))
+      setTotal(prev => prev - 1)
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
+      alert(msg ?? 'Erro ao excluir cliente.')
+    }
+  }
+
   async function gerarLinkIntakeCliente(clientId: string) {
     try {
       const { data } = await api.post<{ link: string }>('/api/intake/generate', { client_id: clientId })
@@ -164,6 +176,13 @@ export default function ClientList() {
                                     onClick={() => void gerarLinkIntakeCliente(c.id)}
                                   >
                                     <iconify-icon icon="solar:link-circle-linear" />
+                                  </button>
+                                  <button
+                                    className="btn btn-sm btn-outline-danger"
+                                    title="Excluir cliente"
+                                    onClick={() => void excluirCliente(c.id, c.full_name)}
+                                  >
+                                    <iconify-icon icon="solar:trash-bin-linear" />
                                   </button>
                                 </div>
                               </td>
