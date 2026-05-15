@@ -175,6 +175,7 @@ function WhatsAppCard() {
   const [saving, setSaving] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [polling, setPolling] = useState(false)
+  const [showApiKey, setShowApiKey] = useState(false)
 
   useEffect(() => {
     api.get<WAConfig>('/api/whatsapp/config')
@@ -205,8 +206,11 @@ function WhatsAppCard() {
     setConnecting(true)
     setQrcode(null)
     try {
-      const { data } = await api.post<{ qrcode: string | null }>('/api/whatsapp/connect')
-      if (data.qrcode) {
+      const { data } = await api.post<{ qrcode: string | null; connected?: boolean }>('/api/whatsapp/connect')
+      if (data.connected) {
+        setState('open')
+        setConfig(prev => prev ? { ...prev, connected: true } : prev)
+      } else if (data.qrcode) {
         setQrcode(data.qrcode)
         setState('connecting')
         startPolling()
@@ -289,14 +293,24 @@ function WhatsAppCard() {
               </div>
               <div className="mb-2">
                 <label className="form-label fs-12">API Key *</label>
-                <input
-                  className="form-control form-control-sm"
-                  type="password"
-                  placeholder="••••••••"
-                  value={form.evolution_api_key}
-                  onChange={e => setForm(p => ({ ...p, evolution_api_key: e.target.value }))}
-                  required
-                />
+                <div className="input-group input-group-sm">
+                  <input
+                    className="form-control form-control-sm"
+                    type={showApiKey ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={form.evolution_api_key}
+                    onChange={e => setForm(p => ({ ...p, evolution_api_key: e.target.value }))}
+                    required
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={() => setShowApiKey(v => !v)}
+                    tabIndex={-1}
+                  >
+                    <iconify-icon icon={showApiKey ? 'solar:eye-closed-linear' : 'solar:eye-linear'} />
+                  </button>
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label fs-12">Nome da instância</label>
