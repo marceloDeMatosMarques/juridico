@@ -188,10 +188,11 @@ export const portalController = {
 
       const mime = await detectMime(arquivo.buffer)
 
+      const tipoDoc = (req.body.document_type as string) || 'extra'
       const doc = await prisma.processDocument.create({
         data: {
           process_id: proc.id,
-          document_type: 'extra',
+          document_type: tipoDoc as import('@prisma/client').DocumentType,
           file_name: arquivo.originalname,
           file_url: uploadUrl(filename),
           file_path: dest,

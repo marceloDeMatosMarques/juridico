@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
 import { generateCourtLink } from '../../utils/processo'
@@ -9,6 +9,25 @@ import FinancialList from './FinancialList'
 type Client = { id: string; full_name: string; cpf: string | null; email: string | null; phone: string | null }
 type TimelineEntry = { id: string; action_type: string; description: string; created_at: string }
 type Document = { id: string; file_name: string; document_type: string }
+type FullDoc = { id: string; file_name: string; document_type: string; file_url: string | null; upload_date: string; uploaded_by_role: string | null; requires_password: boolean }
+
+const DOC_TIPOS = [
+  { value: 'extra',                label: 'Outros' },
+  { value: 'procuracao',           label: 'Procuração' },
+  { value: 'identidade',           label: 'Identidade (RG)' },
+  { value: 'cpf',                  label: 'CPF' },
+  { value: 'cnh',                  label: 'CNH' },
+  { value: 'comprovante_residencia', label: 'Comp. Residência' },
+  { value: 'foto_evidencia',       label: 'Foto / Evidência' },
+  { value: 'contrato',             label: 'Contrato' },
+  { value: 'nota_fiscal',          label: 'Nota Fiscal' },
+]
+
+const DOC_LABEL: Record<string, string> = {
+  procuracao: 'Procuração', identidade: 'Identidade', cpf: 'CPF', cnh: 'CNH',
+  comprovante_residencia: 'Comp. Residência', nota_fiscal: 'Nota Fiscal',
+  contrato: 'Contrato', foto_evidencia: 'Foto/Evidência', extra: 'Outro',
+}
 
 type Process = {
   id: string
@@ -74,13 +93,53 @@ export default function ProcessDetails() {
   const [processo, setProcesso] = useState<Process | null>(null)
   const [loading, setLoading] = useState(true)
   const [generatingAI, setGeneratingAI] = useState(false)
+  const [docs, setDocs] = useState<FullDoc[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [docType, setDocType] = useState('extra')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const fetchDocs = useCallback(async () => {
+    if (!id) return
+    const { data } = await api.get<{ documents: FullDoc[] }>(`/api/processes/${id}/documents`)
+    setDocs(data.documents)
+  }, [id])
 
   useEffect(() => {
     if (!id) return
-    api.get<Process>(`/api/processes/${id}`)
-      .then(({ data }) => setProcesso(data))
-      .finally(() => setLoading(false))
+    Promise.all([
+      api.get<Process>(`/api/processes/${id}`),
+      api.get<{ documents: FullDoc[] }>(`/api/processes/${id}/documents`),
+    ]).then(([p, d]) => {
+      setProcesso(p.data)
+      setDocs(d.data.documents)
+    }).finally(() => setLoading(false))
   }, [id])
+
+  async function handleUpload(file: File) {
+    if (!id) return
+    setUploading(true)
+    const form = new FormData()
+    form.append('file', file)
+    form.append('document_type', docType)
+    try {
+      await api.post(`/api/processes/${id}/documents/upload`, form)
+      await fetchDocs()
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
+      alert(msg ?? 'Erro ao enviar arquivo.')
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  async function handleDeleteDoc(docId: string) {
+    if (!confirm('Excluir este documento?')) return
+    try {
+      await api.delete(`/api/processes/${id}/documents/${docId}`)
+      setDocs(prev => prev.filter(d => d.id !== docId))
+    } catch { alert('Erro ao excluir documento.') }
+  }
 
   const generateAiSummary = useCallback(async () => {
     if (!id) return
@@ -235,25 +294,55 @@ export default function ProcessDetails() {
               {/* Documents */}
               <div className="card mb-3">
                 <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="card-title mb-0">Documentos ({processo.documents.length})</h6>
-                    <button className="btn btn-xs btn-outline-primary" onClick={() => navigate(`/processes/${id}/petition`)}>
-                      Gerenciar
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h6 className="card-title mb-0">Documentos ({docs.length})</h6>
+                    <button className="btn btn-xs btn-outline-secondary" onClick={() => navigate(`/processes/${id}/petition`)} title="Montador de Petição (arrastar, girar, gerar PDF)">
+                      Montador ↗
                     </button>
                   </div>
-                  {processo.documents.length === 0 ? (
+
+                  {/* Upload */}
+                  <div className="d-flex gap-2 mb-3">
+                    <select className="form-select form-select-sm" value={docType} onChange={e => setDocType(e.target.value)} style={{ maxWidth: 160 }}>
+                      {DOC_TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                    <button className="btn btn-sm btn-outline-primary flex-shrink-0" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                      {uploading ? <span className="spinner-border spinner-border-sm me-1" /> : <iconify-icon icon="solar:upload-linear" className="me-1" />}
+                      Enviar
+                    </button>
+                    <input ref={fileRef} type="file" className="d-none"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) void handleUpload(f) }}
+                    />
+                  </div>
+
+                  {docs.length === 0 ? (
                     <p className="text-muted fs-13 mb-0">Nenhum documento.</p>
                   ) : (
-                    <ul className="list-group list-group-sm">
-                      {processo.documents.slice(0, 5).map(d => (
-                        <li key={d.id} className="list-group-item py-1 fs-13">
-                          📄 {d.file_name} <span className="text-muted">({d.document_type})</span>
-                        </li>
+                    <div className="d-flex flex-column gap-1">
+                      {docs.map(d => (
+                        <div key={d.id} className="d-flex align-items-center gap-2 py-1 border-bottom">
+                          <iconify-icon icon="solar:document-linear" className="text-muted fs-16 flex-shrink-0" />
+                          <div className="flex-grow-1 overflow-hidden">
+                            <div className="fs-13 text-truncate">{d.file_name}</div>
+                            <div className="fs-11 text-muted">
+                              <span className="badge bg-secondary-subtle text-secondary">{DOC_LABEL[d.document_type] ?? d.document_type}</span>
+                              {' '}{new Date(d.upload_date).toLocaleDateString('pt-BR')}
+                              {d.uploaded_by_role === 'cliente' && <span className="ms-1 badge bg-info-subtle text-info">cliente</span>}
+                              {d.requires_password && <span className="ms-1 badge bg-warning-subtle text-warning">🔒</span>}
+                            </div>
+                          </div>
+                          {d.file_url && (
+                            <a href={d.file_url} target="_blank" rel="noreferrer" className="btn btn-xs btn-outline-secondary" title="Baixar">
+                              <iconify-icon icon="solar:download-linear" />
+                            </a>
+                          )}
+                          <button className="btn btn-xs btn-outline-danger" title="Excluir" onClick={() => void handleDeleteDoc(d.id)}>
+                            <iconify-icon icon="solar:trash-bin-linear" />
+                          </button>
+                        </div>
                       ))}
-                      {processo.documents.length > 5 && (
-                        <li className="list-group-item py-1 fs-13 text-muted">+{processo.documents.length - 5} mais</li>
-                      )}
-                    </ul>
+                    </div>
                   )}
                 </div>
               </div>

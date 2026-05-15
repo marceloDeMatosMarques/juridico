@@ -27,6 +27,7 @@ export default function PortalProcessDetails() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadErr, setUploadErr] = useState('')
+  const [docType, setDocType] = useState('extra')
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -46,9 +47,10 @@ export default function PortalProcessDetails() {
     setUploadErr('')
     const form = new FormData()
     form.append('file', file)
+    form.append('document_type', docType)
     try {
       const { data } = await portalApi.post<Doc>(`/api/portal/processes/${id}/upload`, form)
-      setDocs(prev => [{ ...data, document_type: 'extra', upload_date: new Date().toISOString(), uploaded_by_role: 'cliente' }, ...prev])
+      setDocs(prev => [{ ...data, document_type: docType, upload_date: new Date().toISOString(), uploaded_by_role: 'cliente' }, ...prev])
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { erro?: string } } }).response?.data?.erro
       setUploadErr(msg ?? 'Erro ao enviar arquivo.')
@@ -126,13 +128,24 @@ export default function PortalProcessDetails() {
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h6 className="card-title mb-0">Documentos ({docs.length})</h6>
             {!proc.readonly && (
-              <>
-                <button className="btn btn-sm btn-outline-primary" onClick={() => fileRef.current?.click()} disabled={uploading}>
+              <div className="d-flex gap-2 align-items-center">
+                <select className="form-select form-select-sm" value={docType} onChange={e => setDocType(e.target.value)} style={{ maxWidth: 150 }}>
+                  <option value="extra">Outros</option>
+                  <option value="identidade">Identidade (RG)</option>
+                  <option value="cpf">CPF</option>
+                  <option value="cnh">CNH</option>
+                  <option value="comprovante_residencia">Comp. Residência</option>
+                  <option value="foto_evidencia">Foto / Evidência</option>
+                  <option value="contrato">Contrato</option>
+                  <option value="nota_fiscal">Nota Fiscal</option>
+                </select>
+                <button className="btn btn-sm btn-outline-primary flex-shrink-0" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   {uploading ? <span className="spinner-border spinner-border-sm me-1" /> : null}
-                  + Enviar documento
+                  + Enviar
                 </button>
-                <input ref={fileRef} type="file" className="d-none" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f) }} />
-              </>
+                <input ref={fileRef} type="file" className="d-none" accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleUpload(f) }} />
+              </div>
             )}
           </div>
           {uploadErr && <div className="alert alert-danger py-2 fs-12 mb-2">{uploadErr}</div>}
